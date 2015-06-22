@@ -50,8 +50,9 @@ class JsonMessage(object):
     def to_json(self):
         d = self.__dict__.copy()
         del d['DEFAULTS']
-        d['__class__'] = str(self.__class__)
-        return json_util.dumps(d, sort_keys=True, indent=4, default=json_util.default)
+        class_name = str(self.__class__)
+        d['__class__'] = class_name[class_name.find('\'')+1:class_name.rfind('\'')]
+        return json_util.dumps(d, sort_keys=True, default=json_util.default)
 
     def from_json(self, str):
         result = json_util.loads(str)

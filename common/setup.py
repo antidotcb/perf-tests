@@ -4,9 +4,11 @@ setup(
     name="pt_common",
     version='0.0.1',
     author='Danylo Bilyk',
+    url='https://github.com/antidotcb/perf-tests',
     author_email='danylo.bilyk@eglobal-forex.com',
     description='The common libraries shared between Client & Server',
-    packages=find_packages(where='src/pt', exclude=['scenario_scripts']),
+    package_dir={'': 'src'},
+    packages=find_packages(where='src'),
     install_requires=['pika', 'pymongo'],
     extras_require={
         'dev': ['check-manifest'],
