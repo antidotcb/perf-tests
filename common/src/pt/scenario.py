@@ -1,6 +1,7 @@
 __author__ = 'Danylo Bilyk'
 import time
 
+
 class scenario:
     def __init__(self, name):
         self.name = name
