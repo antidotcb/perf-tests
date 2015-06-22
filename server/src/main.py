@@ -1,19 +1,19 @@
 __author__ = 'Danylo Bilyk'
 
 import pika
+from pt import MessageSender
+from pt.request import DiscoveryRequest
 
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
-channel.queue_declare(queue='hello')
+sender = MessageSender(connection)
 
-channel.basic_publish(exchange='',
-                      routing_key='hello',
-                      body='Hello World!')
-print " [x] Sent 'Hello World!'"
+dr = DiscoveryRequest()
 
-channel.queue_delete(queue='hello')
-channel.close()
+channel.exchange_declare(exchange='fan-out',
+                         type='fanout')
+sender.send(dr)
 
 connection.close()
 

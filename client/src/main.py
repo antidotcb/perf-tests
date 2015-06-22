@@ -1,26 +1,29 @@
 __author__ = 'Danylo Bilyk'
 import pika
-from pt import scenario
-from pt.request.discovery import DiscoveryRequest
 
-s1 = scenario('test')
-s1.run()
-
-dr = DiscoveryRequest()
-print dr.to_json()
-'''
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
-channel.queue_declare(queue='hello')
 
-def callback(ch, method, properties, body):
-    print " [x] Received %r" % (body,)
+channel.exchange_declare(exchange='fan-out',
+                         type='fanout')
+
+result = channel.queue_declare(exclusive=True)
+queue_name = result.method.queue
+
+channel.queue_bind(exchange='fan-out',
+                   queue=queue_name)
+
+def callback(channel, method, properties, body):
+    print " [x] body: %r" % (body)
+    print " [-] channel: ", (channel)
+    print " [-] method: ", (method)
+    print " [-] properties: ", (properties)
+    print ""
 
 channel.basic_consume(callback,
-                  queue='hello',
+                  queue=queue_name,
                   no_ack=True)
 
 print ' [*] Waiting for requests. To exit press CTRL+C'
 channel.start_consuming()
-'''
