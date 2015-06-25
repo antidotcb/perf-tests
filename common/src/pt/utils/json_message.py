@@ -3,11 +3,14 @@ __author__ = 'Danylo Bilyk'
 from datetime import datetime
 
 from bson import json_util
+
 from .protocol import Protocol
 from .protocol_message import ProtocolMessage
 
+
 def default_time():
     return datetime.now()
+
 
 class JsonMessage(object):
     __metaclass__ = ProtocolMessage
@@ -53,8 +56,8 @@ class JsonMessage(object):
                     self._FIELDS[attr] = _FIELDS[attr]
 
     def to_json(self):
-        d = {k:self.__dict__[k] for k in self.__dict__ if not str(k).startswith('_')}
-        d['__class__'] = self._protocol.typename(self.__class__)
+        d = {k: self.__dict__[k] for k in self.__dict__ if not str(k).startswith('_')}
+        d[self._protocol.class_id()+'1'] = self._protocol.typename(self.__class__) + '1'
         return json_util.dumps(d, sort_keys=True, default=json_util.default)
 
     def from_json(self, str):

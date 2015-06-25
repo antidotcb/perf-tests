@@ -1,28 +1,37 @@
 __author__ = 'Danylo Bilyk'
 
 import pika
-from pt import MessageSender
+from pt.server import Sender
+from pt import Config, RabbitConnection
 from pt.request import DiscoveryRequest
-from pt.utils.protocol import Protocol
-from bson import json_util
 
-print Protocol().list()
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-channel = connection.channel()
 
-sender = MessageSender(connection)
-
-dr = DiscoveryRequest()
-json = dr.to_json()
-parsed = dict(json_util.loads(json))
-print Protocol().create(parsed).to_json()
-
-channel.exchange_declare(exchange='fan-out',
-                         type='fanout')
-sender.send(dr)
-
-#connection.close()
 
 if __name__ == '__main__':
-    print 'Orchestrator server', __package__
+    config = Config()
+
+    options = Config().get_options(Config.CONNECTION_SECTION)
+    connection_options = Config().get_options(Config.CONNECTION_SECTION)
+    exchange_opts = Config().get_options(Config.EXCHANGE_SECTION)
+
+    connection = RabbitConnection(connection_options)
+
+
+    request_exchange=exchange_opts['request']
+
+    connection.exchange_declare(exchange=request_exchange, type='fanout')
+
+    connection_opts = get_connection_options()
+    connection = pika.BlockingConnection(pika.ConnectionParameters(**connection_opts))
+    channel = connection.channel()
+
+
+
+
+
+    sender = Sender(connection, request_exchange)
+
+    sender.send(DiscoveryRequest())
+
+    connection.close()

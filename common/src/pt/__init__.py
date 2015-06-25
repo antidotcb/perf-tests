@@ -1,4 +1,7 @@
 __author__ = 'Danylo Bilyk'
-import utils
+
+from .config import Config
+from .connection import RabbitConnection
 from .scenario import Scenario
-from .sender import MessageSender
+import pt.request
+import pt.response

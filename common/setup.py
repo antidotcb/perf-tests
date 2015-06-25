@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="pt_common",
+    name='pt_common',
     version='0.0.1',
     author='Danylo Bilyk',
     url='https://github.com/antidotcb/perf-tests',

@@ -4,7 +4,6 @@ from pt.utils.json_message import JsonMessage
 
 
 class DiscoveryRequest(JsonMessage):
-
     _FIELDS = {
         'message': 'Default message'
     }

@@ -8,7 +8,7 @@ class Scenario:
         pass
 
     def run(self):
-        print "Start scenario execution:", self.name
+        print 'Start scenario execution:', self.name
         time.sleep(1)
-        print "End scenario execution:", self.name
+        print 'End scenario execution:', self.name
         return 0

@@ -1,4 +1,4 @@
-__author__ = 'antidotcb'
+__author__ = 'Danylo Bilyk'
 
 from pt.utils.protocol import Protocol
 
