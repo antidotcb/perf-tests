@@ -1,10 +1,11 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.message import JsonMessage
+from pt.utils.json_message import JsonMessage
 
 
 class DiscoveryRequest(JsonMessage):
-    DEFAULTS = {
+
+    _FIELDS = {
         'message': 'Default message'
     }
 

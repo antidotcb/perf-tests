@@ -1,21 +1,23 @@
 __author__ = 'Danylo Bilyk'
 
 from datetime import datetime
-import json
 
 from bson import json_util
-
+from .protocol import Protocol
+from .protocol_message import ProtocolMessage
 
 def default_time():
     return datetime.now()
 
-
 class JsonMessage(object):
-    DEFAULTS = {
+    __metaclass__ = ProtocolMessage
+
+    _FIELDS = {
         'timestamp': default_time
     }
 
     def __init__(self, *args, **kwargs):
+        self._protocol = Protocol()
         self.setup_default()
         self.set_values(kwargs)
         for arg in args:
@@ -23,45 +25,43 @@ class JsonMessage(object):
                 self.set_values(arg)
             elif isinstance(arg, object):
                 self.set_values(arg.__dict__)
-        for attr in self.DEFAULTS.keys():
+        for attr in self._FIELDS.keys():
             if attr not in self.__dict__:
-                default = self.DEFAULTS[attr]
+                default = self._FIELDS[attr]
+                if default is None:
+                    continue
                 if hasattr(default, '__call__'):
                     default = default()
                 setattr(self, attr, default)
 
     def set_values(self, fields):
-        allowed = self.DEFAULTS.keys()
+        allowed = self._FIELDS.keys()
         for attr in fields.keys():
+            if str(attr).startswith('_'):
+                continue
             if attr in allowed:
                 setattr(self, attr, fields[attr])
             else:
-                if attr != 'DEFAULTS':
-                    raise AttributeError('Attribute `%s` is not allowed' % attr)
+                raise AttributeError('Attribute `%s` is not allowed' % attr)
 
     def setup_default(self):
-        self.DEFAULTS = self.DEFAULTS
+        self._FIELDS = self._FIELDS
         for base in self.__class__.__bases__:
-            defaults = getattr(base, 'DEFAULTS', [])
-            for attr in defaults:
-                if attr not in self.DEFAULTS.keys():
-                    self.DEFAULTS[attr] = defaults[attr]
+            _FIELDS = getattr(base, '_FIELDS', [])
+            for attr in _FIELDS:
+                if attr not in self._FIELDS.keys():
+                    self._FIELDS[attr] = _FIELDS[attr]
 
     def to_json(self):
-        d = self.__dict__.copy()
-        del d['DEFAULTS']
-        class_name = str(self.__class__)
-        d['__class__'] = class_name[class_name.find('\'')+1:class_name.rfind('\'')]
+        d = {k:self.__dict__[k] for k in self.__dict__ if not str(k).startswith('_')}
+        d['__class__'] = self._protocol.typename(self.__class__)
         return json_util.dumps(d, sort_keys=True, default=json_util.default)
 
     def from_json(self, str):
         result = json_util.loads(str)
         for attr, value in result.iteritems():
-            if attr in self.DEFAULTS.keys():
+            if attr in self._FIELDS.keys():
                 setattr(self, attr, value)
-        if 'tzinfo' in self.__dict__:
-            del self.__dict__['tzinfo']
-
 
     def __str__(self):
         return str(self.__dict__)

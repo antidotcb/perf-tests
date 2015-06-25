@@ -1,6 +1,6 @@
 __author__ = 'Danylo Bilyk'
 
-from pt import JsonMessage
+from .utils.json_message import JsonMessage
 
 class MessageSender:
     def __init__(self, connection):
