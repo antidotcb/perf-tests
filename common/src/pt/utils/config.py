@@ -3,7 +3,7 @@ __author__ = 'antidotcb'
 import ConfigParser
 import os
 
-from .singleton import Singleton
+from singleton import Singleton
 from pt.utils import logger
 
 

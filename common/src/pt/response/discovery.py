@@ -5,7 +5,7 @@ from pt.utils import Config
 
 
 def client_id():
-    name = Config().name
+    name = Config().get('name')
     return name
 
 
@@ -16,4 +16,3 @@ class DiscoveryResponse(JsonMessage):
 
     def __init__(self, *args, **kwargs):
         super(DiscoveryResponse, self).__init__(*args, **kwargs)
-        pass

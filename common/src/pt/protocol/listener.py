@@ -8,9 +8,9 @@ from pt.utils import logger
 class Listener:
     def __init__(self, connection, exchange, processor):
         if not isinstance(processor, MessageProcessor):
-            raise TypeError('Listener message processor should be MessageProcessor type.')
+            raise TypeError('Processor should be a MessageProcessor subclass')
 
-        self._protocol = Census()
+        self._census = Census()
         self._processor = processor
         self._channel = connection.channel
 

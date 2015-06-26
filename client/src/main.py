@@ -1,7 +1,7 @@
 __author__ = 'Danylo Bilyk'
 
 from pt import RabbitConnection
-from pt.protocol import Listener
+from pt.protocol import *
 from pt.processors import RequestProcessor
 from pt.utils import Config
 
@@ -13,6 +13,9 @@ if __name__ == '__main__':
     exchanges = Config().get_options(Config.EXCHANGE_SECTION)
 
     connection = RabbitConnection(connection_options)
-    exchange = exchanges['request']
-    client = Listener(connection, exchange, RequestProcessor())
+    in_exchange = exchanges['request']
+    out_exchange = exchanges['request']
+
+    responder = Sender(connection, out_exchange)
+    client = Listener(connection, in_exchange, RequestProcessor(responder))
     client.start()

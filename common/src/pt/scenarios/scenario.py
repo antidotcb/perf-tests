@@ -5,7 +5,6 @@ import time
 class Scenario:
     def __init__(self, name):
         self.name = name
-        pass
 
     def run(self):
         print 'Start scenario execution:', self.name
