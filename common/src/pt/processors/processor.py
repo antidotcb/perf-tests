@@ -1,5 +1,6 @@
 __author__ = 'Danylo Bilyk'
 
+
 class MessageProcessor:
     def __init__(self):
         pass

@@ -1,7 +1,8 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.utils import JsonMessage
-# from pt import Config
+from pt.protocol import JsonMessage
+from pt.utils import Config
+
 
 def client_id():
     name = Config().name

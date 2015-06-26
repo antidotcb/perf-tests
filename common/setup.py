@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pt_common',
-    version='0.0.1',
+    version='0.0.2',
     author='Danylo Bilyk',
     url='https://github.com/antidotcb/perf-tests',
     author_email='danylo.bilyk@eglobal-forex.com',

@@ -4,8 +4,9 @@ from datetime import datetime
 
 from bson import json_util
 
-from .protocol import Protocol
-from .protocol_message import ProtocolMessage
+from .catalogue import Catalogue
+
+from .census import Census
 
 
 def default_time():
@@ -13,14 +14,14 @@ def default_time():
 
 
 class JsonMessage(object):
-    __metaclass__ = ProtocolMessage
+    __metaclass__ = Catalogue
 
     _FIELDS = {
         'timestamp': default_time
     }
 
     def __init__(self, *args, **kwargs):
-        self._protocol = Protocol()
+        self._protocol = Census()
         self.setup_default()
         self.set_values(kwargs)
         for arg in args:
@@ -57,7 +58,7 @@ class JsonMessage(object):
 
     def to_json(self):
         d = {k: self.__dict__[k] for k in self.__dict__ if not str(k).startswith('_')}
-        d[self._protocol.class_id()+'1'] = self._protocol.typename(self.__class__) + '1'
+        d[self._protocol.class_id()] = self._protocol.typename(self.__class__)
         return json_util.dumps(d, sort_keys=True, default=json_util.default)
 
     def from_json(self, str):

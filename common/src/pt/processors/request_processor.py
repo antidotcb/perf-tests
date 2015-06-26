@@ -1,8 +1,15 @@
 __author__ = 'Danylo Bilyk'
 
-class SimpleProcessor:
+from bson import json_util
+
+from .processor import MessageProcessor
+from pt.protocol import Census
+from pt.utils import logger
+
+
+class RequestProcessor(MessageProcessor):
     def __init__(self):
-        pass
+        self._protocol = Census()
 
     def process(self, channel, method, properties, body):
         logger.debug(' [+] body: %r', body)
@@ -10,11 +17,8 @@ class SimpleProcessor:
         logger.debug(' [-] method: %r', method)
         logger.debug(' [-] properties: %r', properties)
         try:
-            if self._processor:
-                self._processor.process(channel, method, properties, body)
-            parsed = dict(json_util.loads(body))
-            message = self._protocol.create(dict(parsed))
-            channel.basic_ack(delivery_tag=method.delivery_tag)
+            json = dict(json_util.loads(body))
+            message = self._protocol.create(json)
             return message
         except Exception, e:
             logger.exception('Exception occured: %s', e)

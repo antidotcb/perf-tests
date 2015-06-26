@@ -1,10 +1,10 @@
 __author__ = 'Danylo Bilyk'
 
-from .singleton import Singleton
-import logger
+from pt.utils import Singleton
+from pt.utils import logger
 
 
-class Protocol:
+class Census:
     __metaclass__ = Singleton
 
     def __init__(self):
@@ -45,8 +45,6 @@ class Protocol:
             raise TypeError('Message type is empty.' % self.class_id())
         class_name = self.type(type_name)
         if not class_name:
-            raise LookupError('Protocol message type not registered: %s' % type_name)
+            raise LookupError('Census message type not registered: %s' % type_name)
         message = class_name(json)
         return message
-
-

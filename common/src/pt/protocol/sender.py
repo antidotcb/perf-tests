@@ -1,11 +1,12 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.utils.json_message import JsonMessage
+from .message import JsonMessage
 from pt.utils import logger
+
 
 class Sender:
     def __init__(self, connection, exchange, routing_key=''):
-        self._channel = connection.channel()
+        self._channel = connection.channel
         self._exchange = exchange
         self._routing_key = routing_key
 
