@@ -1,9 +1,9 @@
 __author__ = 'Danylo Bilyk'
 
 from .connection import RabbitConnection
-import pt.protocol
-import pt.processors
-import pt.request
-import pt.response
-import pt.scenarios
-import pt.utils
+from .processors import *
+from .protocol import *
+from .request import *
+from .response import *
+from .scenarios import *
+from .utils import *

@@ -1,18 +1,23 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.protocol import Census
-from pt.protocol import JsonMessage
+from pt.request import Request
+from pt.protocol import MessageCatalog
+from pt.protocol import RegisteredMessage
 from pt.response import DiscoveryResponse
+from pt.scenarios import Scenario
+from pt.utils import logger
 
-class DiscoveryRequest(JsonMessage):
+class DiscoveryRequest(Request):
+    __metaclass__ = RegisteredMessage
+
     _FIELDS = {
         'message': 'Default message',
-        'response': Census().typename(DiscoveryResponse)
+        'response': MessageCatalog().typename(DiscoveryResponse)
     }
 
     def __init__(self, *args, **kwargs):
         super(DiscoveryRequest, self).__init__(*args, **kwargs)
-        self._census = Census()
+        self._catalog = MessageCatalog()
 
     def perform(self):
-        return self._census.construct(self.response)
+        return self._catalog.construct(self.response)

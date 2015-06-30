@@ -4,24 +4,20 @@ from datetime import datetime
 
 from bson import json_util
 
-from .catalogue import Catalogue
-
-from .census import Census
+from .message_catalog import MessageCatalog
 
 
 def default_time():
     return datetime.now()
 
 
-class JsonMessage(object):
-    __metaclass__ = Catalogue
-
+class Message(object):
     _FIELDS = {
         'timestamp': default_time
     }
 
     def __init__(self, *args, **kwargs):
-        self._census = Census()
+        self._catalog = MessageCatalog()
         self.setup_default()
         self.set_values(kwargs)
         for arg in args:
@@ -58,11 +54,11 @@ class JsonMessage(object):
 
     def to_json(self):
         d = {k: self.__dict__[k] for k in self.__dict__ if not str(k).startswith('_')}
-        d[self._census.class_id] = self._census.typename(self.__class__)
+        d[self._catalog.class_id] = self._catalog.typename(self.__class__)
         return json_util.dumps(d, sort_keys=True, default=json_util.default)
 
-    def from_json(self, str):
-        result = json_util.loads(str)
+    def from_json(self, json_str):
+        result = json_util.loads(json_str)
         for attr, value in result.iteritems():
             if attr in self._FIELDS.keys():
                 setattr(self, attr, value)

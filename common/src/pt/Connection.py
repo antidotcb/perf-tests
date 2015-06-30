@@ -15,7 +15,7 @@ class RabbitConnection:
         self._connection = pika.BlockingConnection(pika.ConnectionParameters(**self._options))
         self.channel = self._connection.channel()
 
-    def create_exchange(self, exchange, exchange_type, *args, **kwargs):
+    def create_exchange(self, exchange, exchange_type, **kwargs):
         return self.channel.exchange_declare(exchange=exchange, type=exchange_type, passive=False, **kwargs)
 
     def get_exchange(self, exchange, **kwargs):

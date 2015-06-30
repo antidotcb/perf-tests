@@ -4,7 +4,7 @@ from pt.utils import Singleton
 from pt.utils import logger
 
 
-class Census:
+class MessageCatalog(object):
     __metaclass__ = Singleton
 
     def __init__(self):
@@ -21,10 +21,9 @@ class Census:
         return type_name in self.definition
 
     def add(self, type_name):
-        type_name = self.typename(type_name)
-        if 'JsonMessage' not in type_name:
-            logger.debug('Registered protocol message type: %s', type_name)
-            self.definition[unicode(type_name)] = type_name
+        name = self.typename(type_name)
+        logger.debug('Registered protocol message type: %s', name)
+        self.definition[unicode(name)] = type_name
 
     @staticmethod
     def typename(type_name):
@@ -46,6 +45,6 @@ class Census:
             raise TypeError('Message type is empty')
         class_name = self.type(type_name)
         if not class_name:
-            raise LookupError('Census message type not registered: %s' % type_name)
+            raise LookupError('MessageCatalog message type not registered: %s' % type_name)
         message = class_name(*arg, **kwargs)
         return message

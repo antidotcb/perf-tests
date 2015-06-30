@@ -1,4 +1,4 @@
-__author__ = 'antidotcb'
+__author__ = 'Danylo Bilyk'
 
 import ConfigParser
 import os
@@ -7,7 +7,7 @@ from singleton import Singleton
 from pt.utils import logger
 
 
-class Config:
+class Config(object):
     __metaclass__ = Singleton
 
     DEFAULT_CONFIG = '../config.ini'
