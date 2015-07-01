@@ -3,10 +3,7 @@ __author__ = 'Danylo Bilyk'
 import cmd
 from pt import RabbitConnection, ResponseProcessor, Sender, Listener, DiscoveryRequest, Config
 
-import sys
-import gevent
-import gevent.select
-
+from threading import *
 
 class Server(cmd.Cmd):
     def __init__(self):
@@ -26,18 +23,26 @@ class Server(cmd.Cmd):
 
         self._listener = Listener(self._connection, self._in_exchange, ResponseProcessor().process)
         self._jobs = []
+        self._jobs.append(Thread(target=self._listener.start))
+        self._jobs.append(Thread(target=self.cmdloop))
 
-    def start(self):
-        self._jobs.append(gevent.spawn(self._listener.start))
-        self.do_discovery()
-        #self.cmdloop('Orchestrator:')
-        gevent.wait(self._jobs)
+    def run(self):
+        for t in self._jobs:
+            t.start()
+        for t in self._jobs:
+            t.join()
 
+    # noinspection PyUnusedLocal
     def do_stop(self, *args):
-        gevent.killall(self._jobs)
-        connection.close()
+        for t in self._jobs:
+            try:
+                t._Thread__stop()
+            except Exception, e:
+                print('%s could not be terminated. Exception: %s' % (t.getName(), e))
+        self._connection.close()
         return True
 
+    # noinspection PyUnusedLocal
     def do_discovery(self, *args):
         request_sender = Sender(self._connection, self._out_exchange)
         request_sender.send(DiscoveryRequest())
@@ -45,4 +50,4 @@ class Server(cmd.Cmd):
 
 if __name__ == '__main__':
     server = Server()
-    server.start()
+    server.run()

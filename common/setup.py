@@ -9,7 +9,7 @@ setup(
     description='The common libraries shared between Client & Server',
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
-    install_requires=['pika', 'pymongo', 'gevent'],
+    install_requires=['pika', 'pymongo', 'pyreadline'],
     extras_require={
         'dev': ['check-manifest'],
         'test': ['coverage']
