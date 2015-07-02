@@ -4,8 +4,7 @@ from pt.request import Request
 from pt.protocol import MessageCatalog
 from pt.protocol import RegisteredMessage
 from pt.response import DiscoveryResponse
-from pt.scenarios import Scenario
-from pt.utils import logger
+
 
 class DiscoveryRequest(Request):
     __metaclass__ = RegisteredMessage

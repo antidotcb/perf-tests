@@ -5,8 +5,7 @@ import errno
 import sys
 import os
 
-import fcntl
-
+# import fcntl
 from .scenario import Scenario
 
 
@@ -17,8 +16,8 @@ class ExecuteScript(Scenario):
 
     def _exec_run(self, *args, **kwargs):
         p = subprocess.Popen(self._args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        fcntl.fcntl(p.stdin, fcntl.F_SETFL, os.O_NONBLOCK)  # make the file nonblocking
-        fcntl.fcntl(p.stdout, fcntl.F_SETFL, os.O_NONBLOCK)  # make the file nonblocking
+        # fcntl.fcntl(p.stdin, fcntl.F_SETFL, os.O_NONBLOCK)  # make the file non-blocking
+        # fcntl.fcntl(p.stdout, fcntl.F_SETFL, os.O_NONBLOCK)  # make the file non-blocking
 
         bytes_total = len(data)
         bytes_written = 0

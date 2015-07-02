@@ -6,7 +6,7 @@ setup(
     author='Danylo Bilyk',
     url='https://github.com/antidotcb/perf-tests',
     author_email='danylo.bilyk@eglobal-forex.com',
-    description='The common libraries shared between Client & Server',
+    description='The common libraries shared between WorkerInfo & Server',
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
     install_requires=['pika', 'pymongo', 'pyreadline'],

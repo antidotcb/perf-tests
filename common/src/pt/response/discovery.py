@@ -1,32 +1,24 @@
 __author__ = 'Danylo Bilyk'
 
-import socket
-
 from .response import Response
 from pt.protocol import RegisteredMessage
-from pt.utils import Config, logger
-
-
-def client_id():
-    name = Config().get('name')
-    return name
-
-
-def client_ip():
-    ip = socket.gethostbyname(socket.gethostname())
-    return ip
+from pt.utils import logger
+from pt.processors.server_state import ServerState
+from pt.processors.worker_info import WorkerInfo
 
 
 class DiscoveryResponse(Response):
     __metaclass__ = RegisteredMessage
 
     _FIELDS = {
-        'client': client_id,
-        'ip': client_ip
+        'client': WorkerInfo().name,
+        'ip': WorkerInfo().ip
     }
 
     def __init__(self, *args, **kwargs):
         super(DiscoveryResponse, self).__init__(*args, **kwargs)
+        self._server = ServerState()
 
     def collect(self):
         logger.info('Collected response: %s', self.to_json())
+        self._server.workers.add(WorkerInfo(self.client, self.ip))

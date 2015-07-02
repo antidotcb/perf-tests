@@ -16,7 +16,8 @@ class Listener(object):
 
         self._queue = self._channel.queue_declare(exclusive=True)
         self._channel.queue_bind(exchange=exchange, queue=self._queue_name(), **kwargs)
-        self._channel.basic_consume(self.callback, queue=self._queue_name(), no_ack=not self._ack)
+
+        self._consumer_tag = self._channel.basic_consume(self.callback, queue=self._queue_name(), no_ack=not self._ack)
 
     def _queue_name(self):
         return self._queue.method.queue
@@ -24,11 +25,14 @@ class Listener(object):
     def start(self):
         self._channel.start_consuming()
 
+    def stop(self):
+        self._channel.stop_consuming(self._consumer_tag)
+
     def callback(self, channel, method, properties, body):
-        logger.debug('channel: %s', channel)
-        logger.debug('method: %s', method)
-        logger.debug('properties: %s', properties)
-        logger.debug('body: %s', body)
+        # logger.debug('channel: %s', channel)
+        # logger.debug('method: %s', method)
+        # logger.debug('properties: %s', properties)
+        # logger.debug('body: %s', body)
         if self._processor:
             try:
                 self._processor(channel, method, properties, body)

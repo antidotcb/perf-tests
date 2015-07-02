@@ -2,7 +2,7 @@ __author__ = 'Danylo Bilyk'
 
 from bson import json_util
 
-from pt.protocol import Message, MessageCatalog
+from pt.protocol import MessageCatalog
 from pt.request import Request
 from pt.utils import logger
 
