@@ -7,18 +7,14 @@ from pt.utils import logger, Config
 
 class WorkerInfo(object):
     def __init__(self, name=None, ip=None):
-        self.name = 'unknown'
-        self.ip = None
-        if name:
-            self.name = name
-        else:
-            Config().get('name')
+        self.name = name
+        self.ip = ip
 
-        if ip:
-            self.ip = ip
-        else:
-            ip = socket.gethostbyname(socket.gethostname())
-
+    @staticmethod
+    def own():
+        name = Config().get('name')
+        ip = socket.gethostbyname(socket.gethostname())
+        return WorkerInfo(name, ip)
 
 
 class WorkerInfoCollection(object):

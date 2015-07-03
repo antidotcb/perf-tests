@@ -1,6 +1,5 @@
 __author__ = 'Danylo Bilyk'
 
-from .message_catalog import MessageCatalog
 from pt.utils import logger
 
 
@@ -9,7 +8,6 @@ class Listener(object):
         if not hasattr(processor, '__call__'):
             raise TypeError('Processor should be a callable')
 
-        self._catalog = MessageCatalog()
         self._processor = processor
         self._channel = connection.channel
         self._ack = ack
