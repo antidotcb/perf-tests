@@ -1,0 +1,21 @@
++--------------------------------------+-------------+--------+------------+-------------+--------------------------------------------------------------------------------------------------+
+| ID                                   | Name        | Status | Task State | Power State | Networks                                                                                         |
++--------------------------------------+-------------+--------+------------+-------------+--------------------------------------------------------------------------------------------------+
+| 48c7450f-0a98-4d0d-a025-2acc25e8592e | rslv-mlx-5  | ACTIVE | -          | Running     | public=2a00:1a48:7806:115:be76:4eff:fe08:768c, 162.13.85.48; private=10.179.195.171              |
+| e66495d7-4a76-427a-aea5-f93328fc5bb5 | rslv-ppx-1  | ACTIVE | -          | Running     | public=95.138.177.22, 2a00:1a48:7804:110:ee23:5983:ff08:1d1c; private=10.178.129.33              |
+| 05f24084-0dc0-440d-aa82-3c3d0cbe446c | rslv-ppx-2  | ACTIVE | -          | Running     | public=2a00:1a48:7805:112:ee23:5983:ff08:367d, 162.13.2.122; private=10.179.2.109                |
+| 026b4227-b83d-4c3d-9b0a-31ce4cea4073 | rslv-ppx-4  | ACTIVE | -          | Running     | public=162.13.119.8, 162.13.15.227, 2a00:1a48:7806:116:ee23:5983:ff08:4971; private=10.180.3.190 |
+| 40a40762-b5d3-49b5-abde-8707c0be95cb | rslv-ppx-5  | ACTIVE | -          | Running     | public=162.13.136.96, 2a00:1a48:7807:102:be76:4eff:fe08:af24; private=10.181.67.177              |
+| 5c9be673-e292-4239-b325-c44784a77856 | rswv-app-t1 | ACTIVE | -          | Running     | public=134.213.63.23, 2a00:1a48:7808:101:be76:4eff:fe08:ecf5; private=10.181.136.248             |
+| 1eb04d42-9a54-4470-9d12-52b4e75a31a2 | rswv-dc-t1  | ACTIVE | -          | Running     | public=95.138.174.12, 2a00:1a48:7805:113:be76:4eff:fe08:f39c; private=10.179.69.203              |
+| fd6938e8-ec9d-47e8-aaf5-05a1d56e298b | rswv-dc-t10 | ACTIVE | -          | Running     | public=95.138.172.199, 2a00:1a48:7805:113:be76:4eff:fe08:e17f; private=10.179.68.117             |
+| f4df9e3d-f90f-4129-8428-4dc6eb734d92 | rswv-dc-t2  | ACTIVE | -          | Running     | public=95.138.175.18, 2a00:1a48:7805:113:be76:4eff:fe08:8bcc; private=10.179.71.201              |
+| 66f54b6b-fbcc-46ef-9851-32091687c028 | rswv-dc-t3  | ACTIVE | -          | Running     | public=2a00:1a48:7805:113:be76:4eff:fe08:a464, 95.138.169.246; private=10.179.67.139             |
+| 9b214320-5943-4819-a9c2-d387c90bb87e | rswv-dc-t4  | ACTIVE | -          | Running     | public=95.138.171.214, 2a00:1a48:7805:113:be76:4eff:fe08:52f; private=10.179.67.225              |
+| 0c2373dc-2d7c-40d3-9bc9-7dd888daaf5c | rswv-dc-t5  | ACTIVE | -          | Running     | public=2a00:1a48:7806:115:be76:4eff:fe08:b5f1, 162.13.46.110; private=10.179.192.114             |
+| 52b1f65a-b3fb-41d5-be46-d4cc4155d049 | rswv-dc-t6  | ACTIVE | -          | Running     | public=2a00:1a48:7806:115:be76:4eff:fe08:de55, 162.13.46.162; private=10.179.192.127             |
+| 99560ba4-f97b-4979-852b-49f2c5be17dd | rswv-dc-t7  | ACTIVE | -          | Running     | public=162.13.47.64, 2a00:1a48:7806:115:be76:4eff:fe08:4c10; private=10.179.193.60               |
+| ab14979e-1e31-4ab3-8f1a-f4af1285e054 | rswv-dc-t8  | ACTIVE | -          | Running     | public=162.13.47.88, 2a00:1a48:7806:115:be76:4eff:fe08:b29c; private=10.179.193.180              |
+| 18b91d48-ebdc-4c61-9e0d-d42ba3ad7d3d | rswv-dc-t9  | ACTIVE | -          | Running     | public=95.138.172.194, 2a00:1a48:7805:113:be76:4eff:fe08:e055; private=10.179.68.12              |
+| 9d3f8ba4-0ed2-4694-8cc2-a071851a04b8 | rswv-mgm-7  | ACTIVE | -          | Running     | public=95.138.172.237, 2a00:1a48:7805:113:ee23:5983:ff08:49b9; private=10.179.72.54              |
++--------------------------------------+-------------+--------+------------+-------------+--------------------------------------------------------------------------------------------------+
