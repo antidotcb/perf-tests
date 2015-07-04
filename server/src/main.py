@@ -1,7 +1,7 @@
 __author__ = 'Danylo Bilyk'
 
-from pt import Server
+from pt.orchestrator import Orchestrator
 
 if __name__ == '__main__':
-    server = Server()
-    server.start()
+    orchestrator = Orchestrator()
+    orchestrator.start()

@@ -4,7 +4,7 @@ from pt.utils import Singleton
 from pt.utils import logger
 
 
-class MessageCatalog(object):
+class Protocol(object):
     __metaclass__ = Singleton
 
     def __init__(self):
@@ -23,7 +23,7 @@ class MessageCatalog(object):
     def add(self, type_name):
         name = self.typename(type_name)
         logger.debug('Registered protocol message type: %s', name)
-        self.definition[unicode(name)] = type_name
+        self.definition[name] = type_name
 
     @staticmethod
     def typename(type_name):
@@ -45,6 +45,6 @@ class MessageCatalog(object):
             raise TypeError('Message type is empty')
         class_name = self.type(type_name)
         if not class_name:
-            raise LookupError('MessageCatalog message type not registered: %s' % type_name)
+            raise LookupError('Protocol message type not registered: %s' % type_name)
         message = class_name(*arg, **kwargs)
         return message

@@ -1,9 +1,9 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.protocol import Message
+from pt.protocol import JsonMessage
 
 
-class Response(Message):
+class Response(JsonMessage):
     def __init__(self, *args, **kwargs):
         super(Response, self).__init__(*args, **kwargs)
 

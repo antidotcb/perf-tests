@@ -1,13 +1,11 @@
 __author__ = 'Danylo Bilyk'
 
 from .request import Request
-from pt.protocol import RegisteredMessage
 from pt.worker import Worker
 from pt.utils import logger
 
-class RestartRequest(Request):
-    __metaclass__ = RegisteredMessage
 
+class RestartRequest(Request):
     _FIELDS = {
         'reason': None,
         'target': '*'

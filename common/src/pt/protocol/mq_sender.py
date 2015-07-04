@@ -1,6 +1,6 @@
 __author__ = 'Danylo Bilyk'
 
-from .message import Message
+from .json_message import JsonMessage
 from pt.utils import logger
 
 
@@ -14,7 +14,7 @@ class Sender(object):
         key = self._key
         if routing_key:
             key = routing_key
-        if isinstance(message, Message):
+        if isinstance(message, JsonMessage):
             json = message.to_json()
             logger.debug('Sending json: %s', json)
             self._channel.basic_publish(exchange=self._exchange, routing_key=key, body=json)

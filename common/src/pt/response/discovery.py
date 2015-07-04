@@ -1,15 +1,13 @@
 __author__ = 'Danylo Bilyk'
 
 from .response import Response
-from pt.protocol import RegisteredMessage
+
 from pt.utils import logger
 from pt.processors.server_state import ServerState
 from pt.processors.worker_info import WorkerInfo
 
 
 class DiscoveryResponse(Response):
-    __metaclass__ = RegisteredMessage
-
     _FIELDS = {
         'client': WorkerInfo().name,
         'ip': WorkerInfo().ip

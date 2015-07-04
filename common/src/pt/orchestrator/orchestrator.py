@@ -11,8 +11,7 @@ from pt.processors import ResponseProcessor
 from pt.processors import ServerState
 
 
-
-class Server(cmd.Cmd):
+class Orchestrator(cmd.Cmd):
     def __init__(self):
         cmd.Cmd.__init__(self)
         # config = Config()
@@ -85,4 +84,3 @@ class Server(cmd.Cmd):
             logger.warning('Unknown names: %s', ', '.join(incorrect))
         for worker in selected:
             self._sender.send(RestartRequest(target=worker.ip))
-

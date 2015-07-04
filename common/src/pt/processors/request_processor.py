@@ -2,7 +2,7 @@ __author__ = 'Danylo Bilyk'
 
 from bson import json_util
 
-from pt.protocol import MessageCatalog
+from pt.protocol import Protocol
 from pt.request import Request
 from pt.utils import logger
 
@@ -10,7 +10,7 @@ from pt.utils import logger
 class RequestProcessor(object):
     def __init__(self, sender):
         super(RequestProcessor, self).__init__()
-        self._catalog = MessageCatalog()
+        self._catalog = Protocol()
         self._sender = sender
 
     def process(self, channel, method, properties, body):

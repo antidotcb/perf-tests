@@ -30,7 +30,7 @@ class Listener(object):
         # logger.debug('channel: %s', channel)
         # logger.debug('method: %s', method)
         # logger.debug('properties: %s', properties)
-        # logger.debug('body: %s', body)
+        logger.debug('body: %s', body)
         if self._processor:
             try:
                 self._processor(channel, method, properties, body)

@@ -4,20 +4,20 @@ from datetime import datetime
 
 from bson import json_util
 
-from .message_catalog import MessageCatalog
+from .protocol import Protocol
 
 
 def default_time():
     return datetime.now()
 
 
-class Message(object):
+class JsonMessage(object):
     _FIELDS = {
         'timestamp': default_time
     }
 
     def __init__(self, *args, **kwargs):
-        self._catalog = MessageCatalog()
+        self._catalog = Protocol()
         self.setup_default()
         self.set_values(kwargs)
         for arg in args:

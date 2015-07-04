@@ -6,6 +6,7 @@ from pt.protocol import Sender
 from pt.utils import Config, Singleton
 from pt.processors import RequestProcessor
 
+
 class Worker(object):
     __metaclass__ = Singleton
 
