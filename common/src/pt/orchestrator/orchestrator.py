@@ -5,10 +5,9 @@ from threading import *
 
 from pt import RabbitConnection
 from pt.protocol import Sender, Listener
-from pt.utils import Config
+from pt.utils import Config, logger
 from pt.request import DiscoveryRequest, RestartRequest
-from pt.processors import ResponseProcessor
-from pt.processors import ServerState
+from pt.processors import ResponseProcessor, ServerState
 
 
 class Orchestrator(cmd.Cmd):
@@ -67,7 +66,7 @@ class Orchestrator(cmd.Cmd):
                 format = '%{0}s %s'.format(len(longest_name_worker.name))
             print '\n'.join([format % (worker.name, worker.ip) for worker in workers])
 
-    def do_restart(self, args):
+    def do_restart(self, *args):
         all = self._state.workers
         selected = all
         if len(args) and args[0] != '*':
@@ -76,11 +75,11 @@ class Orchestrator(cmd.Cmd):
             selected_names = [name for name in args if name in worker_names]
             selected_by_name = [worker for worker in all if worker.name in selected_names]
             selected_ips = [ip for ip in args if ip in worker_ips]
-            selected_by_ip = [worker for worker in all if worker.ips in selected_ips]
+            selected_by_ip = [worker for worker in all if worker_ips in selected_ips]
             incorrect = [arg for arg in args if arg not in worker_ips and arg not in selected_names]
             selected = list(set(selected_by_name) | set(selected_by_ip))
-            logger.warning('Unknown names: %s', ', '.join(incorrect))
-            logger.debug('Restarting names: %s', ', '.join(incorrect))
-            logger.warning('Unknown names: %s', ', '.join(incorrect))
+            logger.debug('Restarting names: %s', ', '.join(selected))
+            if incorrect:
+                logger.warn('Unknown names: %s', ', '.join(incorrect))
         for worker in selected:
             self._sender.send(RestartRequest(target=worker.ip))

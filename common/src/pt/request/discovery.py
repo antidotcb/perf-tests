@@ -1,11 +1,13 @@
 __author__ = 'Danylo Bilyk'
 
 from pt.request import Request
-from pt.protocol import Protocol
+from pt.protocol import Protocol, ProtocolMessage
 from pt.response import DiscoveryResponse
 
 
 class DiscoveryRequest(Request):
+    __metaclass__ = ProtocolMessage
+
     _FIELDS = {
         'message': 'Default message',
         'response': Protocol().typename(DiscoveryResponse)
