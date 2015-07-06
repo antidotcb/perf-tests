@@ -9,7 +9,7 @@ from pt.utils import logger
 class RestartRequest(Request):
     __metaclass__ = ProtocolMessage
 
-    _FIELDS = {
+    _DEFAULTS = {
         'reason': None,
     }
 

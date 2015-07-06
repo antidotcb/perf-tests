@@ -12,7 +12,7 @@ def default_time():
 
 
 class JsonMessage(object):
-    _FIELDS = {
+    _DEFAULTS = {
         'timestamp': default_time
     }
 
@@ -25,30 +25,27 @@ class JsonMessage(object):
                 self.set_values(arg)
             elif isinstance(arg, object):
                 self.set_values(arg.__dict__)
-        for attr in self._FIELDS.keys():
+        for attr in self._DEFAULTS.keys():
             if attr not in self.__dict__:
-                default = self._FIELDS[attr]
+                default = self._DEFAULTS[attr]
                 if default and hasattr(default, '__call__'):
                     default = default()
                 setattr(self, attr, default)
 
     def set_values(self, fields):
-        allowed = self._FIELDS.keys()
+        allowed = self._DEFAULTS.keys()
         for attr in fields.keys():
             if str(attr).startswith('_'):
                 continue
-            if attr in allowed:
-                setattr(self, attr, fields[attr])
-            else:
-                raise AttributeError('Attribute `%s` is not allowed' % attr)
+            setattr(self, attr, fields[attr])
 
     def setup_default(self):
-        self._FIELDS = self._FIELDS
+        self._DEFAULTS = self._DEFAULTS
         for base in JsonMessage.__classlookup(self.__class__):
-            _FIELDS = getattr(base, '_FIELDS', [])
-            for attr in _FIELDS:
-                if attr not in self._FIELDS.keys():
-                    self._FIELDS[attr] = _FIELDS[attr]
+            _DEFAULTS = getattr(base, '_DEFAULTS', [])
+            for attr in _DEFAULTS:
+                if attr not in self._DEFAULTS.keys():
+                    self._DEFAULTS[attr] = _DEFAULTS[attr]
 
     def to_json(self):
         d = {k: self.__dict__[k] for k in self.__dict__ if not str(k).startswith('_')}
@@ -58,7 +55,7 @@ class JsonMessage(object):
     def from_json(self, json_str):
         result = json_util.loads(json_str)
         for attr, value in result.iteritems():
-            if attr in self._FIELDS.keys():
+            if attr in self._DEFAULTS.keys():
                 setattr(self, attr, value)
 
     def __str__(self):

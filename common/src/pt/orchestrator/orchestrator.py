@@ -86,4 +86,3 @@ class Orchestrator(cmd.Cmd):
 
     def do_update(self, *args):
         self._sender.send(ExecuteRequest(script='C:\\work\\perf-tests\\common\\scenario_scripts\\update_src.bat'))
-

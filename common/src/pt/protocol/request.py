@@ -1,11 +1,14 @@
 __author__ = 'Danylo Bilyk'
 
+from uuid import uuid4
+
 from pt.protocol import JsonMessage
 from pt.utils import WorkerInfo
 
 
 class Request(JsonMessage):
-    _FIELDS = {
+    _DEFAULTS = {
+        'uuid': uuid4,
         'target': '*'
     }
 

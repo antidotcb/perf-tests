@@ -2,14 +2,13 @@ __author__ = 'Danylo Bilyk'
 
 from pt.protocol.response import Response
 
-from pt.utils import logger
 from pt.protocol import ProtocolMessage
 
 
 class ScriptResult(Response):
     __metaclass__ = ProtocolMessage
 
-    _FIELDS = {
+    _DEFAULTS = {
         'result': 0,
         'output': ''
     }

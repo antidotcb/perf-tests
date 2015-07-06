@@ -5,7 +5,7 @@ from pt.utils import WorkerInfo, logger
 
 
 class Response(JsonMessage):
-    _FIELDS = {
+    _DEFAULTS = {
         'client': WorkerInfo.own().name,
         'ip': WorkerInfo.own().ip
     }

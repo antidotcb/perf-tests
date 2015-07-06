@@ -10,7 +10,7 @@ from pt.response import ScriptResult
 class ExecuteRequest(Request):
     __metaclass__ = ProtocolMessage
 
-    _FIELDS = {
+    _DEFAULTS = {
         'script': None,
         'cwd': 'c:\\work\\perf-tests',
     }
@@ -23,6 +23,6 @@ class ExecuteRequest(Request):
         if self._is_target():
             try:
                 output = self._scenario.run()
-                return ScriptResult(result = self._scenario.status(), output=output)
+                return ScriptResult(result=self._scenario.status(), output=output)
             except Exception, e:
                 logger.error('Exception during execution of script (%s): %s', self.script, e.message)
