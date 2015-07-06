@@ -18,6 +18,7 @@ class ExecuteRequest(Request):
     def __init__(self, *args, **kwargs):
         super(ExecuteRequest, self).__init__(*args, **kwargs)
         self._scenario = ExecuteScript(self.script, cwd=self.cwd)
+        logger.debug('Created execute script scenario: %s', self.script)
 
     def perform(self):
         if self._is_target():
