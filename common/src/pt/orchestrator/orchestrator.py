@@ -70,15 +70,15 @@ class Orchestrator(cmd.Cmd):
         all = self._state.workers
         selected = all
         if len(args) and args[0] != '*':
-            worker_names = [worker.name for worker in all]
-            worker_ips = [worker.ip for worker in all]
+            worker_names = [str(worker.name) for worker in all]
+            worker_ips = [str(worker.ip) for worker in all]
             selected_names = [name for name in args if name in worker_names]
             selected_by_name = [worker for worker in all if worker.name in selected_names]
             selected_ips = [ip for ip in args if ip in worker_ips]
             selected_by_ip = [worker for worker in all if worker_ips in selected_ips]
             incorrect = [arg for arg in args if arg not in worker_ips and arg not in selected_names]
             selected = list(set(selected_by_name) | set(selected_by_ip))
-            logger.debug('Restarting names: %s', ', '.join(selected))
+            logger.debug('Restarting names: %s', ', '.join([worker.name for worker in selected]))
             if incorrect:
                 logger.warn('Unknown names: %s', ', '.join(incorrect))
         for worker in selected:

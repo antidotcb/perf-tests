@@ -28,9 +28,7 @@ class JsonMessage(object):
         for attr in self._FIELDS.keys():
             if attr not in self.__dict__:
                 default = self._FIELDS[attr]
-                if default is None:
-                    continue
-                if hasattr(default, '__call__'):
+                if default and hasattr(default, '__call__'):
                     default = default()
                 setattr(self, attr, default)
 
