@@ -53,6 +53,7 @@ class Orchestrator(cmd.Cmd):
 
     # noinspection PyUnusedLocal
     def do_discovery(self, *args):
+        self._state.workers.reset()
         self._sender.send(DiscoveryRequest())
 
     # noinspection PyUnusedLocal
@@ -86,3 +87,12 @@ class Orchestrator(cmd.Cmd):
 
     def do_update(self, *args):
         self._sender.send(ExecuteRequest(script='C:\\work\\perf-tests\\common\\scenario_scripts\\update_src.bat'))
+
+    def do_mt4_start(self, *args):
+        self._sender.send(ExecuteRequest(script='C:\\work\\perf-tests\\common\\scenario_scripts\\mt4_start.bat'))
+
+    def do_mt4_stop(self, *args):
+        self._sender.send(ExecuteRequest(script='C:\\work\\perf-tests\\common\\scenario_scripts\\mt4_stop.bat'))
+
+    def do_mt4_query(self, *args):
+        self._sender.send(ExecuteRequest(script='C:\\work\\perf-tests\\common\\scenario_scripts\\mt4_query.bat'))

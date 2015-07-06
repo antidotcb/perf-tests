@@ -12,27 +12,13 @@ class ExecuteScript(Scenario):
     def __init__(self, command, cwd=None, **kwargs):
         self._args = command.split()
         self._cwd = cwd
+        self._pid = 0
         super(ExecuteScript, self).__init__(self._args[0], **kwargs)
 
     def _exec_run(self, *args, **kwargs):
         sp = subprocess
         p = sp.Popen(self._args, cwd=self._cwd, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
-        p.communicate()
-
-        p.stdin.close()
-
-        chunks = []
-
-        while True:
-            try:
-                chunk = p.stdout.read(4096)
-                if not chunk:
-                    break
-                chunks.append(chunk)
-            except IOError, ex:
-                if ex[0] != errno.EAGAIN:
-                    raise
-                sys.exc_clear()
-
-        p.stdout.close()
-        return ''.join(chunks)
+        output = p.communicate()
+        self._status = p.returncode
+        self._pid = p.pid
+        return output
