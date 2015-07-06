@@ -1,7 +1,7 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.utils import Singleton
 from .worker_info import WorkerInfoCollection
+from pt.utils import Singleton
 
 
 class ServerState(object):

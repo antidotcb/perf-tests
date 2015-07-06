@@ -1,6 +1,6 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.request import Request
+from pt.protocol.request import Request
 from pt.protocol import Protocol, ProtocolMessage
 from pt.response import DiscoveryResponse
 

@@ -44,7 +44,7 @@ class JsonMessage(object):
 
     def setup_default(self):
         self._FIELDS = self._FIELDS
-        for base in self.__class__.__bases__:
+        for base in JsonMessage.__classlookup(self.__class__):
             _FIELDS = getattr(base, '_FIELDS', [])
             for attr in _FIELDS:
                 if attr not in self._FIELDS.keys():
@@ -63,3 +63,10 @@ class JsonMessage(object):
 
     def __str__(self):
         return str(self.__dict__)
+
+    @staticmethod
+    def __classlookup(cls):
+        bases = list(cls.__bases__)
+        for base in bases:
+            bases.extend(JsonMessage.__classlookup(base))
+        return bases

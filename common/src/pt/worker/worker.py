@@ -1,12 +1,10 @@
 __author__ = 'Danylo Bilyk'
 
-import sys
-import os
-
 from pt import RabbitConnection
 from pt.protocol import Listener, Sender
 from pt.utils import Config, Singleton
 from pt.processors import RequestProcessor
+from pt.scenarios import restart
 
 
 class Worker(object):
@@ -37,5 +35,4 @@ class Worker(object):
 
     def restart(self):
         self.stop()
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
+        restart()

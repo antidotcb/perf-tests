@@ -5,9 +5,9 @@ from threading import *
 
 from pt import RabbitConnection
 from pt.protocol import Sender, Listener
-from pt.utils import Config, logger
-from pt.request import DiscoveryRequest, RestartRequest
-from pt.processors import ResponseProcessor, ServerState
+from pt.utils import Config, logger, ServerState
+from pt.request import DiscoveryRequest, RestartRequest, ExecuteRequest
+from pt.processors import ResponseProcessor
 
 
 class Orchestrator(cmd.Cmd):
@@ -69,7 +69,7 @@ class Orchestrator(cmd.Cmd):
     def do_restart(self, *args):
         all = self._state.workers
         selected = all
-        if len(args) and args[0] != '*':
+        if len(args) and args[0] and args[0] != '*':
             worker_names = [str(worker.name) for worker in all]
             worker_ips = [str(worker.ip) for worker in all]
             selected_names = [name for name in args if name in worker_names]
@@ -83,3 +83,7 @@ class Orchestrator(cmd.Cmd):
                 logger.warn('Unknown names: %s', ', '.join(incorrect))
         for worker in selected:
             self._sender.send(RestartRequest(target=worker.ip))
+
+    def do_update(self, *args):
+        self._sender.send(ExecuteRequest(script='C:\\work\\perf-tests\\common\\scenario_scripts\\update_src.bat'))
+
