@@ -3,41 +3,38 @@ __author__ = 'Danylo Bilyk'
 import ConfigParser
 import os
 
-from singleton import Singleton
-from pt.utils import logger
+from logger import log
+
+DEFAULT_CONFIG = 'config.ini'
+MAIN_SECTION = 'main'
+CONNECTION_SECTION = 'connection'
+EXCHANGE_SECTION = 'exchange'
 
 
-class Config(object):
-    __metaclass__ = Singleton
+def reload(filename=DEFAULT_CONFIG):
+    _parser.read(filename)
 
-    DEFAULT_CONFIG = '../config.ini'
-    MAIN_SECTION = 'main'
-    CONNECTION_SECTION = 'connection'
-    EXCHANGE_SECTION = 'exchange'
 
-    def __init__(self, filename=None):
-        if not filename:
-            filename = self.DEFAULT_CONFIG
-        self._parser = ConfigParser.ConfigParser()
-        self.update(filename)
+def get(option, section=MAIN_SECTION):
+    value = None
+    try:
+        value = _parser.get(section, option, vars=os.environ)
+        log.debug('config.%s.%s=%s', section, option, value)
+    except ConfigParser.NoOptionError as e:
+        log.error('No option %s found', option)
+    except ConfigParser.NoSectionError as e:
+        log.error('No section %s found', section)
+    return value
 
-    def update(self, filename):
-        logger.debug('Updating config from file %s', filename)
-        self._parser.read(filename)
 
-    def get(self, option, section=None):
-        if not section:
-            section = self.MAIN_SECTION
-        value = None
-        try:
-            value = self._parser.get(section, option, vars=os.environ)
-            logger.debug('config.%s.%s=%s', section, option, value)
-        except NoOptionError as e:
-            logger.error('No option %s found', option)
-        except NoSectionError as e:
-            logger.error('No section %s found', section)
-        return value
+def set(option, value, section=MAIN_SECTION):
+    pass
 
-    def get_options(self, section):
-        options = dict(self._parser.items(section))
-        return {k: self.get(k, section) for k in options.keys()}
+
+def get_options(section):
+    options = dict(_parser.items(section))
+    return {k: get(k, section) for k in options.keys()}
+
+
+_parser = ConfigParser.ConfigParser()
+reload()

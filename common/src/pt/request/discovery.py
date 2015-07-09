@@ -1,9 +1,9 @@
 __author__ = 'Danylo Bilyk'
 
 from pt.protocol.request import Request
-from pt.protocol import Protocol, ProtocolMessage
+from pt.protocol import protocol, ProtocolMessage
 from pt.response import DiscoveryResponse
-from pt.utils import logger
+from pt.utils import log
 
 
 class DiscoveryRequest(Request):
@@ -11,13 +11,12 @@ class DiscoveryRequest(Request):
 
     _DEFAULTS = {
         'message': 'Default message',
-        'response': Protocol().typename(DiscoveryResponse)
+        'response': protocol.typename(DiscoveryResponse)
     }
 
     def __init__(self, *args, **kwargs):
         super(DiscoveryRequest, self).__init__(*args, **kwargs)
-        self._catalog = Protocol()
 
     def perform(self):
-        logger.debug('Just creating response with own id: %s', self.uuid)
-        return self._catalog.construct(self.response, request_uuid=self.uuid)
+        log.debug('Just creating response with own id: %s', self.uuid)
+        return protocol.construct(self.response, request_uuid=self.uuid)

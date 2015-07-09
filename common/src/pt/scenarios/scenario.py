@@ -3,7 +3,7 @@ __author__ = 'Danylo Bilyk'
 import time
 import threading
 
-from pt.utils import logger
+from pt.utils import log
 
 
 class Scenario(threading.Thread):
@@ -15,15 +15,15 @@ class Scenario(threading.Thread):
         return self._status
 
     def _pre_run(self, *args, **kwargs):
-        logger.debug('%s _pre_run: (args=%s kwargs=%s' % (self.name, args, kwargs))
-        logger.info('Start scenario execution: %s', self.name)
+        log.debug('%s _pre_run: (args=%s kwargs=%s' % (self.name, args, kwargs))
+        log.info('Start scenario execution: %s', self.name)
 
     def _post_run(self, *args, **kwargs):
-        logger.debug('%s _post_run: (args=%s kwargs=%s)' % (self.name, args, kwargs))
-        logger.info('End scenario execution: %s', self.name)
+        log.debug('%s _post_run: (args=%s kwargs=%s)' % (self.name, args, kwargs))
+        log.info('End scenario execution: %s', self.name)
 
     def _exec_run(self, *args, **kwargs):
-        logger.debug('%s _exec_run: (args=%s kwargs=%s)' % (self.name, args, kwargs))
+        log.debug('%s _exec_run: (args=%s kwargs=%s)' % (self.name, args, kwargs))
         time.sleep(1)
 
     def run(self, *args, **kwargs):

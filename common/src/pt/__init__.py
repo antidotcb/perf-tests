@@ -1,6 +1,7 @@
 __author__ = 'Danylo Bilyk'
 
-from .connection import RabbitConnection
+import mq_connection
+from .utils import *
 from .request import *
 from .response import *
 from .orchestrator import orchestrator

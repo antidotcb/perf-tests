@@ -2,7 +2,7 @@ __author__ = 'Danylo Bilyk'
 
 import socket
 
-from pt.utils import logger, Config
+from pt.utils import log, config
 
 
 class WorkerInfo(object):
@@ -12,7 +12,7 @@ class WorkerInfo(object):
 
     @staticmethod
     def own():
-        name = Config().get('name')
+        name = config.get('name')
         ip = socket.gethostbyname(socket.gethostname())
         return WorkerInfo(name, ip)
 
@@ -28,7 +28,7 @@ class WorkerInfoCollection(object):
         if same_name:
             same_ip = any(x.ip == worker.ip and x.name == worker.name for x in self._list)
             if same_ip:
-                logger.debug('Worker %s with IP %s already known:', worker.name, worker.ip)
+                log.debug('Worker %s with IP %s already known:', worker.name, worker.ip)
             else:
                 raise AttributeError('List already contains worker %s with similar name but different ip' % worker.name)
         else:
@@ -39,3 +39,5 @@ class WorkerInfoCollection(object):
 
     def __iter__(self):
         return iter(self._list)
+
+workers = WorkerInfoCollection()

@@ -2,10 +2,6 @@ __author__ = 'Danylo Bilyk'
 
 from datetime import datetime
 
-from bson import json_util
-
-from .protocol import Protocol
-
 
 def default_time():
     return datetime.now()
@@ -13,12 +9,10 @@ def default_time():
 
 class JsonMessage(object):
     _DEFAULTS = {
-        'timestamp': default_time
     }
 
     def __init__(self, *args, **kwargs):
-        self._catalog = Protocol()
-        self.setup_default()
+        self._setup_defaults()
         self.set_values(kwargs)
         for arg in args:
             if isinstance(arg, dict):
@@ -32,38 +26,29 @@ class JsonMessage(object):
                     default = default()
                 setattr(self, attr, default)
 
-    def set_values(self, fields):
-        allowed = self._DEFAULTS.keys()
-        for attr in fields.keys():
+    def set_values(self, values):
+        if not isinstance(values, dict):
+            raise TypeError('')
+        for attr, value in values.iteritems():
             if str(attr).startswith('_'):
                 continue
-            setattr(self, attr, fields[attr])
+            if attr in self._DEFAULTS.keys():
+                setattr(self, attr, value)
 
-    def setup_default(self):
+    def _setup_defaults(self):
         self._DEFAULTS = self._DEFAULTS
-        for base in JsonMessage.__classlookup(self.__class__):
+        for base in JsonMessage.__class_lookup(self.__class__):
             _DEFAULTS = getattr(base, '_DEFAULTS', [])
             for attr in _DEFAULTS:
                 if attr not in self._DEFAULTS.keys():
                     self._DEFAULTS[attr] = _DEFAULTS[attr]
 
-    def to_json(self):
-        d = {k: self.__dict__[k] for k in self.__dict__ if not str(k).startswith('_')}
-        d[self._catalog.class_id] = self._catalog.typename(self.__class__)
-        return json_util.dumps(d, sort_keys=True, default=json_util.default)
-
-    def from_json(self, json_str):
-        result = json_util.loads(json_str)
-        for attr, value in result.iteritems():
-            if attr in self._DEFAULTS.keys():
-                setattr(self, attr, value)
-
     def __str__(self):
         return str(self.__dict__)
 
     @staticmethod
-    def __classlookup(cls):
+    def __class_lookup(cls):
         bases = list(cls.__bases__)
         for base in bases:
-            bases.extend(JsonMessage.__classlookup(base))
+            bases.extend(JsonMessage.__class_lookup(base))
         return bases

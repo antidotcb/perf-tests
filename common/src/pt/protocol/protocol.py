@@ -1,50 +1,48 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.utils import Singleton
-from pt.utils import logger
+from pt.utils import log
+from bson import json_util
+
+definition = {}
+class_id = '_id'
+
+def is_registered(type_name):
+    return type_name in definition
 
 
-class Protocol(object):
-    __metaclass__ = Singleton
+def register_message_type(type_name):
+    name = typename(type_name)
+    log.debug('Registered protocol message type: %s', name)
+    definition[name] = type_name
 
-    def __init__(self):
-        self.definition = {}
-        self.class_id = '_id'
 
-    def list(self):
-        return self.definition.keys()
+def typename(type_name):
+    type_name = unicode(str(type_name))
+    return type_name[type_name.find('\'') + 1:type_name.rfind('\'')]
 
-    def get(self, name):
-        return self.definition[name]
 
-    def contains(self, type_name):
-        return type_name in self.definition
+def find_msg_type(type_name):
+    return definition[type_name]
 
-    def add(self, type_name):
-        name = self.typename(type_name)
-        logger.debug('Registered protocol message type: %s', name)
-        self.definition[name] = type_name
 
-    @staticmethod
-    def typename(type_name):
-        type_name = unicode(str(type_name))
-        return type_name[type_name.find('\'') + 1:type_name.rfind('\'')]
+def message_from_json(json):
+    try:
+        type_name = json[class_id]
+        return construct(type_name, json)
+    except Exception, e:
+        log.exception('Field %s not found. JSON: %s', e, json)
 
-    def type(self, typename):
-        return self.definition[typename]
 
-    def create(self, json):
-        try:
-            type_name = json[self.class_id]
-            return self.construct(type_name, json)
-        except Exception, e:
-            logger.exception('Field %s not found. JSON: %s', e, json)
+def message_to_json(message):
+    d = {k: message.__dict__[k] for k in message.__dict__ if not str(k).startswith('_')}
+    d[class_id] = typename(message.__class__)
+    return json_util.dumps(d, sort_keys=True, default=json_util.default)
 
-    def construct(self, type_name, *arg, **kwargs):
-        if not type_name:
-            raise TypeError('Message type is empty')
-        class_name = self.type(type_name)
-        if not class_name:
-            raise LookupError('Protocol message type not registered: %s' % type_name)
-        message = class_name(*arg, **kwargs)
-        return message
+def construct(type_name, *arg, **kwargs):
+    if not type_name:
+        raise TypeError('Message type is empty')
+    class_name = find_msg_type(type_name)
+    if not class_name:
+        raise LookupError('Protocol message type not registered: %s' % type_name)
+    message = class_name(*arg, **kwargs)
+    return message

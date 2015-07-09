@@ -1,6 +1,6 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.utils import logger
+from pt.utils import log
 
 
 class Listener(object):
@@ -30,11 +30,11 @@ class Listener(object):
         # logger.debug('channel: %s', channel)
         # logger.debug('method: %s', method)
         # logger.debug('properties: %s', properties)
-        logger.debug('body: %s', body)
+        log.debug('body: %s', body)
         if self._processor:
             try:
                 self._processor(channel, method, properties, body)
                 if self._ack:
                     channel.basic_ack(delivery_tag=method.delivery_tag)
             except Exception, e:
-                logger.exception('Processor failed: %s', e)
+                log.exception('Processor failed: %s', e)

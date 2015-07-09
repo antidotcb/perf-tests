@@ -1,7 +1,7 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.protocol import JsonMessage
-from pt.utils import WorkerInfo, logger
+from pt.protocol import protocol, JsonMessage
+from pt.utils import WorkerInfo, log
 
 
 class Response(JsonMessage):
@@ -14,4 +14,4 @@ class Response(JsonMessage):
         super(Response, self).__init__(*args, **kwargs)
 
     def collect(self):
-        logger.info('Collected response: %s', self.to_json())
+        log.info('Collected response: %s', protocol.message_to_json(self))

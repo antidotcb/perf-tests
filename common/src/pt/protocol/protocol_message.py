@@ -1,12 +1,11 @@
 __author__ = 'Danylo Bilyk'
 
-from .protocol import Protocol
+import protocol
 
 
 class ProtocolMessage(type):
     def __new__(mcs, class_name, bases, attrs):
         new_class = super(ProtocolMessage, mcs).__new__(mcs, class_name, bases, attrs)
-        protocol = Protocol()
-        if not protocol.contains(new_class):
-            protocol.add(new_class)
+        if not protocol.is_registered(new_class):
+            protocol.register_message_type(new_class)
         return new_class

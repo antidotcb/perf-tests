@@ -1,7 +1,8 @@
 __author__ = 'Danylo Bilyk'
 
 from .json_message import JsonMessage
-from pt.utils import logger
+import protocol
+from pt.utils import log
 
 
 class Sender(object):
@@ -15,8 +16,8 @@ class Sender(object):
         if routing_key:
             key = routing_key
         if isinstance(message, JsonMessage):
-            json = message.to_json()
-            logger.debug('Sending json: %s', json)
+            json = protocol.message_to_json(message)
+            log.debug('Sending json: %s', json)
             self._channel.basic_publish(exchange=self._exchange, routing_key=key, body=json)
         else:
             raise TypeError('Unsupported protocol message type')
