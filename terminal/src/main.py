@@ -4,7 +4,7 @@ import sys
 import time
 
 import pt
-from pt.scenarios import restart
+
 
 
 class Terminal(object):
@@ -21,14 +21,3 @@ if __name__ == '__main__':
 
 
 
-def exit_handler():
-    time_to_restart = 60
-    print 'Program is about auto-restart in %d seconds...' % time_to_restart
-    time.sleep(time_to_restart)
-    print 'Initiating restart.'
-    restart()
-
-
-import atexit
-
-atexit.register(exit_handler)
