@@ -1,7 +1,7 @@
 __author__ = 'Danylo Bilyk'
 
 from datetime import datetime
-
+from pika.spec import BasicProperties
 
 def default_time():
     return datetime.now()
@@ -25,6 +25,7 @@ class JsonMessage(object):
                 if default and hasattr(default, '__call__'):
                     default = default()
                 setattr(self, attr, default)
+        self._properties = BasicProperties()
 
     def set_values(self, values):
         if not isinstance(values, dict):

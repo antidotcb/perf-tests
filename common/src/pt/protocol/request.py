@@ -1,23 +1,21 @@
 __author__ = 'Danylo Bilyk'
 
 from uuid import uuid4
-
-from pt.protocol import JsonMessage
-from pt.utils import WorkerInfo
+from pt.protocol import JsonMessage, protocol
 
 
 class Request(JsonMessage):
     _DEFAULTS = {
-        'uuid': uuid4,
-        'target': '*'
+        'target': '*',
+        'response': None
     }
 
     def __init__(self, *args, **kwargs):
         super(Request, self).__init__(*args, **kwargs)
+        self._properties.correlation_id = uuid4()
 
-    def _is_target(self):
-        own = WorkerInfo.own()
-        return str(self.target) in (own.name, own.ip) or str(self.target) == '*'
+    def properties(self):
+        return self._properties
 
     def perform(self):
-        raise NotImplemented()
+        return protocol.construct(self.response)

@@ -5,7 +5,7 @@ import os
 
 from logger import log
 
-DEFAULT_CONFIG = 'config.ini'
+DEFAULT_CONFIG = '..\\config.ini'
 MAIN_SECTION = 'main'
 CONNECTION_SECTION = 'connection'
 EXCHANGE_SECTION = 'exchange'

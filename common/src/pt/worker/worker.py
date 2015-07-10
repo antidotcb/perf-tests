@@ -9,14 +9,13 @@ from pt.scenarios import restart
 
 class Worker(object):
     def __init__(self):
-        self._options = config.get_options(config.CONNECTION_SECTION)
         self._connection_options = config.get_options(config.CONNECTION_SECTION)
         self._exchanges = config.get_options(config.EXCHANGE_SECTION)
 
         self._connection = mq_connection
         self._connection.init(self._connection_options)
-        in_exchange = self._exchanges['request']
-        out_exchange = self._exchanges['report']
+        in_exchange = self._exchanges['broadcast']
+        out_exchange = self._exchanges['direct']
 
         self._response_sender = Sender(self._connection, out_exchange)
         responder = RequestProcessor(self._response_sender)

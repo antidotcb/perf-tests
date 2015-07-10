@@ -5,25 +5,26 @@ from threading import *
 
 from pt import mq_connection
 from pt.protocol import Sender, Listener
-from pt.utils import config, log, workers
+from pt.utils import config, log, workers, enable_auto_restart, disable_auto_restart
 from pt.request import DiscoveryRequest, RestartRequest, ExecuteRequest
 from pt.processors import ResponseProcessor
 
 
 class Orchestrator(cmd.Cmd):
     def __init__(self):
+        enable_auto_restart(10)
         cmd.Cmd.__init__(self)
-        # options = Config().get_options(Config.CONNECTION_SECTION)
+
         connection_options = config.get_options(config.CONNECTION_SECTION)
         exchanges = config.get_options(config.EXCHANGE_SECTION)
 
         self._connection = mq_connection
         self._connection.init(connection_options)
-        self._out_exchange = exchanges['request']
-        self._in_exchange = exchanges['report']
+        self._out_exchange = exchanges['broadcast']
+        self._in_exchange = exchanges['direct']
 
         self._connection.create_exchange(self._out_exchange, 'fanout')
-        self._connection.create_exchange(self._in_exchange, 'fanout', durable=True)
+        self._connection.create_exchange(self._in_exchange, 'direct', durable=True)
 
         self._listener = Listener(self._connection, self._in_exchange, ResponseProcessor().process)
         self._jobs = []
@@ -40,6 +41,7 @@ class Orchestrator(cmd.Cmd):
 
     # noinspection PyUnusedLocal
     def do_stop(self, *args):
+        self._listener.stop()
         for t in self._jobs:
             try:
                 # noinspection PyProtectedMember
@@ -47,6 +49,7 @@ class Orchestrator(cmd.Cmd):
             except Exception, e:
                 print('%s could not be terminated. Exception: %s' % (t.getName(), e))
         self._connection.close()
+        disable_auto_restart()
         return True
 
     # noinspection PyUnusedLocal

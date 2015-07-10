@@ -7,6 +7,7 @@ from pt.utils import WorkerInfo, log
 class Response(JsonMessage):
     _DEFAULTS = {
         'client': WorkerInfo.own().name,
+        'group': config.own().group,
         'ip': WorkerInfo.own().ip
     }
 

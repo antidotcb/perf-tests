@@ -6,15 +6,17 @@ from pt.utils import log, config
 
 
 class WorkerInfo(object):
-    def __init__(self, name=None, ip=None):
+    def __init__(self, name=None, ip=None, group=None):
         self.name = name
         self.ip = ip
+        self.group = group
 
     @staticmethod
     def own():
-        name = config.get('name')
         ip = socket.gethostbyname(socket.gethostname())
-        return WorkerInfo(name, ip)
+        name = config.get('name')
+        group = config.get('group')
+        return WorkerInfo(name, ip, group)
 
 
 class WorkerInfoCollection(object):
@@ -39,5 +41,6 @@ class WorkerInfoCollection(object):
 
     def __iter__(self):
         return iter(self._list)
+
 
 workers = WorkerInfoCollection()

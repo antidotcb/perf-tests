@@ -1,6 +1,6 @@
 __author__ = 'Danylo Bilyk'
 
-from pt.protocol.response import Response
+from pt.protocol import Response
 
 from pt.protocol import ProtocolMessage
 from pt.utils import workers, WorkerInfo
