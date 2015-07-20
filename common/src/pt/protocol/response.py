@@ -12,4 +12,7 @@ class Response(JsonMessage):
     }
 
     def __init__(self, *args, **kwargs):
+        self.client = WorkerInfo().own().name
+        self.group = WorkerInfo().own().group
+        self.ip = WorkerInfo().own().ip
         super(Response, self).__init__(*args, **kwargs)

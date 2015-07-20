@@ -14,4 +14,7 @@ class ExecuteRequest(Request):
     }
 
     def __init__(self, *args, **kwargs):
+        self.script = None
+        self.cwd = None
+        self.timeout = 60
         super(ExecuteRequest, self).__init__(*args, **kwargs)
