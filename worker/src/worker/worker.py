@@ -1,7 +1,8 @@
 __author__ = 'Danylo Bilyk'
 
-import pt
 from pt import log
+
+import pt
 
 
 class Worker(object):
@@ -18,7 +19,7 @@ class Worker(object):
         self._broadcast = pt.protocol.Listener(self._conn, exchanges['broadcast'], self.process)
         self._direct = pt.protocol.Listener(self._conn, exchanges['direct'], self.process, routing_key=self.info.uuid)
 
-        self._sender = pt.protocol.Sender(self._conn, exchanges['direct'], default_send_to='orc')
+        self._sender = pt.protocol.Sender(self._conn, exchanges['direct'])
 
         self.__threads = pt.ThreadCollection()
         self.__threads.append(self._broadcast.start)
@@ -55,7 +56,7 @@ class Worker(object):
             if isinstance(request, pt.ExecuteRequest):
                 scenario = pt.scenarios.ExecuteScript(request.script, cwd=request.cwd)
                 scenario.start(request.timeout)
-                self._sender.send(pt.ExecuteResult(result=scenario.status(), output=scenario.result()),
+                self._sender.send(pt.ExecuteResponse(result=scenario.status(), output=scenario.result()),
                                   to=properties.reply_to)
 
             if isinstance(request, pt.TerminateRequest):
@@ -63,7 +64,7 @@ class Worker(object):
                 self.stop()
 
         except Exception, e:
-            log.error('Exception during execution of script (%s): %s', request.script, e)
+            log.error('Exception during processing:%s\nrequest=%s\npropeties=%s', e, request, properties)
 
     def send_startup_notification(self):
         self._sender.send(pt.response.DiscoveryResponse())
