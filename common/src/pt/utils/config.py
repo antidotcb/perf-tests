@@ -1,14 +1,15 @@
 __author__ = 'Danylo Bilyk'
 
-import ConfigParser
+from optparse import OptionParser
 import os
 import uuid
 import platform
 import socket
 import atexit
-from argparse import ArgumentParser
+import ConfigParser
 
 from logger import log
+from utils import disable_auto_restart
 
 DEFAULT_CONFIG = '..\\config.ini'
 MAIN_SECTION = 'main'
@@ -71,12 +72,17 @@ def __set_defaults():
         set_uuid(_uuid)
     if not get('name'):
         set_name(platform.node())
+
+    parser = OptionParser()
+    parser.add_option("--group", dest="group", help="specify a group for worker", metavar="GROUP")
+    options, args = parser.parse_args()
+    if options.group:
+        set_group(options.group)
+
     if not get('group'):
-        parser = ArgumentParser()
-        parser.add_argument("--group", dest="group", required=True, help="specify a group for worker", metavar="GROUP")
-        args = parser.parse_args()
-        group = args.group
-        set_group(group)
+        disable_auto_restart()
+        raise EnvironmentError('You should specify group in config.ini or in parameter --group')
+
     if not get('ip'):
         ip = socket.gethostbyname(socket.gethostname())
         set_ip(ip)
