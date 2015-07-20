@@ -20,10 +20,10 @@ def get(option, section=MAIN_SECTION):
     try:
         value = _parser.get(section, option, vars=os.environ)
         log.debug('config.%s.%s=%s', section, option, value)
-    except ConfigParser.NoOptionError as e:
-        log.error('No option %s found', option)
-    except ConfigParser.NoSectionError as e:
-        log.error('No section %s found', section)
+    except ConfigParser.NoOptionError, e:
+        log.error('No option %s found. Exception: %s', option, e)
+    except ConfigParser.NoSectionError, e:
+        log.error('No section %s found. Exception: %s', section, e)
     return value
 
 

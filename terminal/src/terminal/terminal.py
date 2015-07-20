@@ -1,4 +1,4 @@
-__author__ = 'antidotcb'
+__author__ = 'Danylo Bilyk'
 
 
 class Terminal(object):

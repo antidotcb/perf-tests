@@ -1,3 +1,3 @@
-__author__ = 'antidotcb'
+__author__ = 'Danylo Bilyk'
 
 from .terminal import Terminal

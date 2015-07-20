@@ -8,7 +8,7 @@ from pt import log
 DEFAULT_REQUEST_TIMEOUT = 10
 
 
-# noinspection PyUnusedLocal
+# noinspection PyUnusedLocal,PyClassicStyleClass
 class Orchestrator(cmd.Cmd):
     def __init__(self):
         cmd.Cmd.__init__(self)
@@ -88,7 +88,7 @@ class Orchestrator(cmd.Cmd):
         ips = sorted(self._workers, key=lambda x: x.ip)
         mask = '%s %s'
         if ips:
-            longest_name_worker = max(ips, key=lambda worker: len(worker.name))
+            longest_name_worker = max(ips, key=lambda w: len(w.name))
             mask = '%{0}s %s'.format(len(longest_name_worker.name))
         print '\n'.join([mask % (worker.name, worker.ip) for worker in ips])
 

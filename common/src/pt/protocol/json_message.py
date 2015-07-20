@@ -8,6 +8,8 @@ def default_time():
 
 
 def class_lookup(cls):
+    if not cls.__bases__:
+        return list()
     bases = list(cls.__bases__)
     for base in bases:
         bases.extend(class_lookup(base))
@@ -42,6 +44,7 @@ class JsonMessage(object):
             if attr in self._DEFAULTS.keys():
                 setattr(self, attr, value)
 
+    # noinspection PyTypeChecker
     def _setup_defaults(self):
         self._DEFAULTS = self._DEFAULTS
         for base in class_lookup(self.__class__):
