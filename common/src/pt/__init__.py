@@ -1,8 +1,8 @@
 __author__ = 'Danylo Bilyk'
 
-import mq_connection
+from .mq_connection import Connection
 from .utils import *
 from .request import *
 from .response import *
-from .orchestrator import orchestrator
-from .worker import Worker
+import scenarios
+import protocol

@@ -12,35 +12,30 @@ class WorkerInfo(object):
         self.group = group
 
     @staticmethod
-    def own():
+    def own(group='workers'):
         ip = socket.gethostbyname(socket.gethostname())
         name = config.get('name')
-        group = config.get('group')
+        group = group if group else config.get('group')
         return WorkerInfo(name, ip, group)
 
 
-class WorkerInfoCollection(object):
+class WorkersCollection(object):
     def __init__(self):
         self._list = []
 
-    def add(self, worker):
-        if not isinstance(worker, WorkerInfo):
-            raise TypeError('Incorrect type')
-        same_name = any(x.name == worker.name for x in self._list)
+    def append(self, name, ip, group):
+        same_name = any(x.name == name for x in self._list)
         if same_name:
-            same_ip = any(x.ip == worker.ip and x.name == worker.name for x in self._list)
+            same_ip = any(x.ip == ip and x.name == name for x in self._list)
             if same_ip:
-                log.debug('Worker %s with IP %s already known:', worker.name, worker.ip)
+                log.debug('Worker %s with IP %s already known.', name, ip)
             else:
-                raise AttributeError('List already contains worker %s with similar name but different ip' % worker.name)
+                raise AttributeError('List already contains worker %s with similar name but different ip' % name)
         else:
-            self._list.append(worker)
+            self._list.append(WorkerInfo(name, ip, group))
 
     def reset(self):
         del self._list[:]
 
     def __iter__(self):
         return iter(self._list)
-
-
-workers = WorkerInfoCollection()

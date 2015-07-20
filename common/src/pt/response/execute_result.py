@@ -5,16 +5,13 @@ from pt.protocol import Response
 from pt.protocol import ProtocolMessage
 
 
-class ScriptResult(Response):
+class ExecuteResult(Response):
     __metaclass__ = ProtocolMessage
 
     _DEFAULTS = {
-        'result': 0,
-        'output': ''
+        'output': '',
+        'result': 0
     }
 
     def __init__(self, *args, **kwargs):
-        super(ScriptResult, self).__init__(*args, **kwargs)
-
-    def collect(self):
-        super(ScriptResult, self).collect()
+        super(ExecuteResult, self).__init__(*args, **kwargs)

@@ -10,6 +10,7 @@ from logger import log
 allow_program_exit = False
 handler_registered = False
 
+
 def restart_program():
     python = sys.executable
     os.execl(python, python, *sys.argv)
@@ -27,10 +28,12 @@ def enable_auto_restart(time_to_restart=60):
         time.sleep(time_to_restart)
         log.debug('Initiating restart.')
         restart_program()
+
     global handler_registered
     if not handler_registered:
         atexit.register(exit_handler)
         handler_registered = True
+
 
 def disable_auto_restart():
     global allow_program_exit

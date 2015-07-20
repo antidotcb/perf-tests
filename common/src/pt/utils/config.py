@@ -11,7 +11,7 @@ CONNECTION_SECTION = 'connection'
 EXCHANGE_SECTION = 'exchange'
 
 
-def reload(filename=DEFAULT_CONFIG):
+def update(filename=DEFAULT_CONFIG):
     _parser.read(filename)
 
 
@@ -27,14 +27,18 @@ def get(option, section=MAIN_SECTION):
     return value
 
 
-def set(option, value, section=MAIN_SECTION):
-    pass
-
-
 def get_options(section):
     options = dict(_parser.items(section))
     return {k: get(k, section) for k in options.keys()}
 
 
+def exchanges():
+    return get_options(EXCHANGE_SECTION)
+
+
+def connection():
+    return get_options(CONNECTION_SECTION)
+
+
 _parser = ConfigParser.ConfigParser()
-reload()
+update()

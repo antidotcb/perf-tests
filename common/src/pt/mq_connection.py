@@ -2,37 +2,42 @@ __author__ = 'Danylo Bilyk'
 
 import pika
 
+from pt.utils import log
 
 
-def init(options):
-    global _connection, channel
-    if not isinstance(options, dict):
-        raise TypeError('Options should be a dictionary')
-    _options = _prepare_options(options)
-    _connection = pika.BlockingConnection(pika.ConnectionParameters(**_options))
-    channel = _connection.channel()
+def fix_credentials(_dict):
+    login, pwd = None, None
+    if 'login' in _dict.keys():
+        login = _dict['login']
+        del _dict['login']
+    if 'password' in _dict.keys():
+        pwd = _dict['password']
+        del _dict['password']
+    if pwd or login:
+        _dict['credentials'] = pika.PlainCredentials(login, pwd)
+    return _dict
 
-def create_exchange(exchange, exchange_type, **kwargs):
-    return channel.exchange_declare(exchange=exchange, type=exchange_type, passive=False, **kwargs)
 
-def get_exchange(exchange, **kwargs):
+def clean_passive(_dict):
     passive = 'passive'
-    if passive in kwargs.keys():
+    if passive in _dict.keys():
         log.warning('`%s` argument is ignored by this function' % passive)
-        del kwargs[passive]
-    return channel.exchange_declare(exchange=exchange, passive=True, **kwargs)
+        del _dict[passive]
+    return _dict
 
-def _prepare_options(options):
-    # replace login & password with pika credentials
-    if 'login' in options.keys():
-        pwd = None
-        if 'password' in options.keys():
-            pwd = options['password']
-        login = options['login']
-        del options['login']
-        del options['password']
-        options['credentials'] = pika.PlainCredentials(login, pwd)
-    return options
 
-def close():
-    _connection.close()
+class Connection(object):
+    def __init__(self, **kwargs):
+        self._conn = pika.BlockingConnection(pika.ConnectionParameters(**fix_credentials(kwargs)))
+
+    def new_channel(self, channel_number=None):
+        return self._conn.channel(channel_number)
+
+    def create_exchange(self, name, exchange_type, **kwargs):
+        channel = self.new_channel()
+        exchange = channel.exchange_declare(exchange=name, exchange_type=exchange_type, **clean_passive(kwargs))
+        channel.close()
+        return exchange
+
+    def close(self):
+        self._conn.close()
