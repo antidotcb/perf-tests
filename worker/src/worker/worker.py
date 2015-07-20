@@ -16,7 +16,7 @@ class Worker(object):
         self._conn.create_exchange(exchanges['direct'], 'direct')
 
         self._broadcast = pt.protocol.Listener(self._conn, exchanges['broadcast'], self.process)
-        self._direct = pt.protocol.Listener(self._conn, exchanges['direct'], self.process, routing_key=self.info.name)
+        self._direct = pt.protocol.Listener(self._conn, exchanges['direct'], self.process, routing_key=self.info.uuid)
 
         self._sender = pt.protocol.Sender(self._conn, exchanges['direct'], default_send_to='orc')
 
@@ -57,6 +57,10 @@ class Worker(object):
                 scenario.start(request.timeout)
                 self._sender.send(pt.ExecuteResult(result=scenario.status(), output=scenario.result()),
                                   to=properties.reply_to)
+
+            if isinstance(request, pt.TerminateRequest):
+                pt.disable_auto_restart()
+                self.stop()
 
         except Exception, e:
             log.error('Exception during execution of script (%s): %s', request.script, e)

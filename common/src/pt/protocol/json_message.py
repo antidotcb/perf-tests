@@ -1,57 +1,27 @@
 __author__ = 'Danylo Bilyk'
 
-from datetime import datetime
-
-
-def default_time():
-    return datetime.now()
-
-
-def class_lookup(cls):
-    if not cls.__bases__:
-        return list()
-    bases = list(cls.__bases__)
-    for base in bases:
-        bases.extend(class_lookup(base))
-    return bases
-
 
 class JsonMessage(object):
-    _DEFAULTS = {
-    }
-
     def __init__(self, *args, **kwargs):
-        self._setup_defaults()
-        self.set_values(kwargs)
         for arg in args:
             if isinstance(arg, dict):
-                self.set_values(arg)
+                self.__set_values(arg)
             elif isinstance(arg, object):
-                self.set_values(arg.__dict__)
-        for attr in self._DEFAULTS.keys():
-            if attr not in self.__dict__:
-                default = self._DEFAULTS[attr]
-                if default and hasattr(default, '__call__'):
-                    default = default()
-                setattr(self, attr, default)
+                self.__set_values(arg.__dict__)
+            else:
+                raise TypeError('Unnamed arguments are accepted only in form dictionaries or objects.')
+        # priority is given to directly passed named arguments, their value override copied values
+        self.__set_values(kwargs)
 
-    def set_values(self, values):
+    def __set_values(self, values):
         if not isinstance(values, dict):
-            raise TypeError('')
+            raise TypeError('Values to setup should be a dictionary.')
         for attr, value in values.iteritems():
             if str(attr).startswith('_'):
-                continue
-            if attr in self._DEFAULTS.keys():
+                continue  # skip `private` members, only public variables are copied
+            if str(attr) in self.__dict__.keys():
+                # setup only object existing values
                 setattr(self, attr, value)
-
-    # noinspection PyTypeChecker
-    def _setup_defaults(self):
-        self._DEFAULTS = self._DEFAULTS
-        for base in class_lookup(self.__class__):
-            _DEFAULTS = getattr(base, '_DEFAULTS', [])
-            for attr in _DEFAULTS:
-                if attr not in self._DEFAULTS.keys():
-                    self._DEFAULTS[attr] = _DEFAULTS[attr]
 
     def __str__(self):
         return str(self.__dict__)

@@ -7,7 +7,5 @@ from pt.protocol import ProtocolMessage
 class DiscoveryRequest(Request):
     __metaclass__ = ProtocolMessage
 
-    _DEFAULTS = {}
-
     def __init__(self, *args, **kwargs):
         super(DiscoveryRequest, self).__init__(*args, **kwargs)

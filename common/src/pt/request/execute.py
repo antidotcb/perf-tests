@@ -7,12 +7,6 @@ from pt.protocol import ProtocolMessage
 class ExecuteRequest(Request):
     __metaclass__ = ProtocolMessage
 
-    _DEFAULTS = {
-        'script': None,
-        'cwd': 'c:\\work\\perf-tests',
-        'timeout': 60
-    }
-
     def __init__(self, *args, **kwargs):
         self.script = None
         self.cwd = None

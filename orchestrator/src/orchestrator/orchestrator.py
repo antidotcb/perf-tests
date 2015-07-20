@@ -1,9 +1,9 @@
 __author__ = 'Danylo Bilyk'
 
 import cmd
+from pt import log
 
 import pt
-from pt import log
 
 DEFAULT_REQUEST_TIMEOUT = 10
 
@@ -39,13 +39,19 @@ class Orchestrator(cmd.Cmd):
 
     def processor(self, response, properties):
         request_id = properties.correlation_id
-        if request_id in self._requests.keys():
-            responses = []
-            if request_id in self._responses.keys():
+        if isinstance(response, pt.protocol.Response):
+            if request_id not in self._requests.keys() and request_id:
+                log.warning('Unrequested response detected: ignoring. Response: %s', response)
+                return
+            if request_id:
                 responses = self._responses[request_id]
-            packed = (response, properties)
-            responses.append(packed)
-            self._responses[request_id] = responses
+                packed = (response, properties)
+                responses.append(packed)
+                self._responses[request_id] = responses
+            else:
+                # probably only case is greeting discovery response set as 'Hello world'
+                if isinstance(response, pt.DiscoveryResponse):
+                    self._workers.append(response.name, response.ip, response.group, response.uuid)
 
     def start(self):
         self.__threads.start()
@@ -57,10 +63,16 @@ class Orchestrator(cmd.Cmd):
         self.__threads.stop()
         self._conn.close()
 
-    def _send_request(self, request):
-        properties = self._broadcast.send(request, reply_to='orc')
+    def _send_request(self, request, sender=None, callback=None, to=''):
+        if not sender:
+            sender = self._broadcast
+        properties = sender.send(request, reply_to='orc', to=to)
         self._requests[properties.message_id] = (request, properties)
-        tc = self.__threads.timeout_callback(DEFAULT_REQUEST_TIMEOUT, self.on_discovery_timeout, properties.message_id)
+        self._responses[properties.message_id] = []
+        if callback:
+            if not hasattr(callback, '__call__'):
+                raise TypeError('Callback should be callable')
+            tc = self.__threads.timeout_callback(DEFAULT_REQUEST_TIMEOUT, callback, properties.message_id)
 
     def on_discovery_timeout(self, request_id):
         request, properties = self._requests[request_id]
@@ -69,9 +81,15 @@ class Orchestrator(cmd.Cmd):
         for packed in responses:
             response, properties = packed
             if isinstance(response, pt.DiscoveryResponse):
-                self._workers.append(response.client, response.ip, response.group)
+                try:
+                    accepted = self._workers.append(response.name, response.ip, response.group, response.uuid)
+                    if not accepted:
+                        log.debug('Shutdown identical workers, it means they are same.')
+                        self._send_request(pt.TerminateRequest(), sender=self._sender, to=response.uuid)
+                except ValueError, e:
+                    log.error('%s', e)
             else:
-                log.error('Invalid response for Discovery')
+                log.error('Invalid response on discovery request')
         self.do_status()
 
     def do_stop(self, *args):
@@ -81,7 +99,7 @@ class Orchestrator(cmd.Cmd):
 
     def do_discovery(self, *args):
         self._workers.reset()
-        self._send_request(pt.DiscoveryRequest())
+        self._send_request(pt.DiscoveryRequest(), callback=self.on_discovery_timeout)
 
     def do_status(self, *args):
         print 'Discovered: '

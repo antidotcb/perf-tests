@@ -21,7 +21,7 @@ def enable_auto_restart(time_to_restart=60):
         global allow_program_exit
 
         if allow_program_exit:
-            log.debug('Program is stopped.', time_to_restart)
+            log.debug('Program is stopped.')
             return
 
         log.info('Program is about auto-restart in %d seconds...', time_to_restart)

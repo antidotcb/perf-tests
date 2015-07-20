@@ -5,13 +5,10 @@ from pt.protocol import Response
 from pt.protocol import ProtocolMessage
 
 
-class ExecuteResult(Response):
+class ExecuteResponse(Response):
     __metaclass__ = ProtocolMessage
 
-    _DEFAULTS = {
-        'output': '',
-        'result': 0
-    }
-
     def __init__(self, *args, **kwargs):
-        super(ExecuteResult, self).__init__(*args, **kwargs)
+        self.output = None
+        self.result = None
+        super(ExecuteResponse, self).__init__(*args, **kwargs)
