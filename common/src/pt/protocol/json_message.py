@@ -1,8 +1,11 @@
 __author__ = 'Danylo Bilyk'
 
+import uuid
+
 
 class JsonMessage(object):
     def __init__(self, *args, **kwargs):
+        self.id = str(uuid.uuid4())
         for arg in args:
             if isinstance(arg, dict):
                 self.__set_values(arg)

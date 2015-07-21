@@ -28,8 +28,8 @@ class Listener(object):
 
     # noinspection PyUnusedLocal
     def callback(self, channel, method, properties, body):
-        log.debug('channel: %s', channel.__dict__)
-        log.debug('method: %s', method.__dict__)
+        # log.debug('channel: %s', channel.__dict__)
+        # log.debug('method: %s', method.__dict__)
         log.debug('properties: %s', properties.__dict__)
         log.debug('body: %s', body)
         if self._processor:
