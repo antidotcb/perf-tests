@@ -21,7 +21,7 @@ class Orchestrator(cmd.Cmd):
         exchanges = pt.config.exchanges()
 
         self._conn.create_exchange(exchanges['broadcast'], 'fanout')
-        self._conn.create_exchange(exchanges['direct'], 'direct')
+        self._conn.create_exchange(exchanges['direct'], 'direct', durable=True)
 
         self._listener = pt.protocol.Listener(self._conn, exchanges['direct'], self.processor,
                                               routing_key=self.info.uuid)

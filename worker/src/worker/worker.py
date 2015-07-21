@@ -14,7 +14,7 @@ class Worker(object):
         exchanges = pt.config.exchanges()
 
         self._conn.create_exchange(exchanges['broadcast'], 'fanout')
-        self._conn.create_exchange(exchanges['direct'], 'direct')
+        self._conn.create_exchange(exchanges['direct'], 'direct', durable=True)
 
         self._broadcast = pt.protocol.Listener(self._conn, exchanges['broadcast'], self.process)
         self._direct = pt.protocol.Listener(self._conn, exchanges['direct'], self.process, routing_key=self.info.uuid)
