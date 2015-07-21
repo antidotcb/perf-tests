@@ -26,7 +26,7 @@ class WorkersCollection(object):
     def append(self, info):
         same_ip = self.find(ip=info.ip)
         if same_ip:
-            identical = self.find(group=info.group, name=info.name, collection=info.same_ip)
+            identical = self.find(group=info.group, name=info.name, collection=same_ip)
             if identical:
                 log.warning('Won\'t append similar worker to collection, probably just several identical instances.')
                 return False
@@ -36,8 +36,8 @@ class WorkersCollection(object):
 
     def find(self, name=None, ip=None, group=None, uuid=None, collection=None):
         if not collection:
-            collection = self._collection.items()
-        found = [item for id, item in collection if
+            collection = [item for id, item in self._collection.items()]
+        found = [item for item in collection if
                  (
                      (item.name == name or not name) and
                      (item.ip == ip or not ip) and
