@@ -16,6 +16,11 @@ MAIN_SECTION = 'main'
 CONNECTION_SECTION = 'connection'
 EXCHANGE_SECTION = 'exchange'
 
+UUID_OPTION = 'uuid'
+IP_OPTION = 'ip'
+NAME_OPTION = 'name'
+GROUP_OPTION = 'group'
+
 
 def update(filename=DEFAULT_CONFIG):
     __parser.read(filename)
@@ -47,31 +52,44 @@ def connection():
     return get_options(CONNECTION_SECTION)
 
 
+def __set_option(option, value, section=MAIN_SECTION):
+    if section not in __parser.sections():
+        __parser.add_section(section)
+
+    if value:
+        __parser.set(section, option, value)
+    else:
+        try:
+            if __parser.get(section, option, value):
+                __parser.remove_option(section, option)
+        except ConfigParser.NoOptionError:
+            # no need to do removal - option does not exist
+            pass
+
+
 def set_group(group):
-    __parser.set(MAIN_SECTION, 'group', group)
+    __set_option(GROUP_OPTION, group)
 
 
 def set_uuid(uuid):
-    __parser.set(MAIN_SECTION, 'uuid', uuid)
+    __set_option(UUID_OPTION, uuid)
 
 
 def set_name(name):
-    __parser.set(MAIN_SECTION, 'name', name)
+    __set_option(NAME_OPTION, name)
 
 
 def set_ip(ip):
-    __parser.set(MAIN_SECTION, 'ip', ip)
+    __set_option(IP_OPTION, ip)
 
 
 def __set_defaults():
-    if MAIN_SECTION not in __parser.sections():
-        __parser.add_section(MAIN_SECTION)
+    _uuid = str(uuid.uuid4())
+    ip = socket.gethostbyname(socket.gethostname())
 
-    if not get('uuid'):
-        _uuid = str(uuid.uuid4())
-        set_uuid(_uuid)
-    if not get('name'):
-        set_name(platform.node())
+    set_uuid(_uuid)
+    set_name(platform.node())
+    set_ip(ip)
 
     parser = OptionParser()
     parser.add_option("--group", dest="group", help="specify a group for worker", metavar="GROUP")
@@ -83,12 +101,15 @@ def __set_defaults():
         disable_auto_restart()
         raise EnvironmentError('You should specify group in config.ini or in parameter --group')
 
-    if not get('ip'):
-        ip = socket.gethostbyname(socket.gethostname())
-        set_ip(ip)
+
+def __cleanup_exceptions():
+    set_uuid(None)
+    set_ip(None)
+    set_name(None)
 
 
 def save_config(filename=DEFAULT_CONFIG):
+    __cleanup_exceptions()
     cfg_file = open(filename, 'w')
     __parser.write(cfg_file)
     cfg_file.close()
