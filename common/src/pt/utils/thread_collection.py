@@ -4,24 +4,18 @@ import time
 import threading
 
 
-def timeout_callback(timeout, callback, *args, **kwargs):
+def timeout_callback(timeout, callback):
     time.sleep(timeout)
-    callback(*args, **kwargs)
+    callback()
 
 
 class ThreadCollection(object):
     def __init__(self):
         self.__threads = []
 
-    def append(self, target, args=(), kwargs=None):
-        thread = threading.Thread(target=target, args=args, kwargs=kwargs)
-        self.__threads.append(thread)
-        return thread
-
-    def timeout_callback(self, callback, timeout, *args, **kwargs):
-        args = (callback, timeout,) + args
-        t = self.append(timeout_callback, args=args, kwargs=kwargs)
-        t.start()
+    def add(self, callback):
+        t = threading.Thread(target=callback)
+        self.__threads.append(t)
 
     def start(self):
         for t in self.__threads:

@@ -30,8 +30,12 @@ class Listener(object):
     def callback(self, channel, method, properties, body):
         # log.debug('channel: %s', channel.__dict__)
         # log.debug('method: %s', method.__dict__)
-        log.debug('properties: %s', properties.__dict__)
-        log.debug('body: %s', body)
+        log.debug('Received message:')
+        log.debug('message_id: %s', properties.message_id)
+        log.debug('type: %s', properties.type)
+        log.debug('reply_on: %s', properties.correlation_id)
+        log.debug('reply_to: %s', properties.reply_to)
+        log.debug('body: %s\n', body)
         if self._processor:
             try:
                 message = protocol.decode_message(body, properties)

@@ -2,6 +2,8 @@ __author__ = 'Danylo Bilyk'
 
 from pt import log
 
+from pt.scenarios import TimeoutError
+
 import pt
 
 
@@ -22,12 +24,12 @@ class Worker(object):
         self._sender = pt.protocol.Sender(self._conn, exchanges['direct'])
 
         self.__threads = pt.ThreadCollection()
-        self.__threads.append(self._broadcast.start)
-        self.__threads.append(self._direct.start)
+        self.__threads.add(self._broadcast.start)
+        self.__threads.add(self._direct.start)
 
     def start(self):
         self.__threads.start()
-        self.send_startup_notification()
+        self.send_discovery_response()
         self.__threads.join()
 
     def stop(self):
@@ -46,18 +48,20 @@ class Worker(object):
             if not isinstance(request, pt.protocol.Request):
                 raise TypeError('Can handle only requests. Something strange received: %s' % request)
 
+            origin = properties.reply_to
             if isinstance(request, pt.request.DiscoveryRequest):
-                self._sender.send(pt.response.DiscoveryResponse(), to=properties.reply_to,
-                                  reply_on=properties.message_id)
+                self.send_discovery_response(to=origin, reply_on=request)
 
             if isinstance(request, pt.RestartRequest):
                 self.restart()
 
             if isinstance(request, pt.ExecuteRequest):
                 scenario = pt.scenarios.ExecuteScript(request.script, cwd=request.cwd)
-                scenario.start(request.timeout)
-                self._sender.send(pt.ExecuteResponse(result=scenario.status(), output=scenario.result()),
-                                  to=properties.reply_to)
+                callback = lambda: self.send_execute_response(scenario, origin, request)
+                try:
+                    scenario.start(request.timeout, callback)
+                except TimeoutError:
+                    self.send_timeout_response(scenario, origin, request)
 
             if isinstance(request, pt.TerminateRequest):
                 pt.disable_auto_restart()
@@ -66,5 +70,14 @@ class Worker(object):
         except Exception, e:
             log.error('Exception during processing:%s\nrequest=%s\npropeties=%s', e, request, properties)
 
-    def send_startup_notification(self):
-        self._sender.send(pt.response.DiscoveryResponse())
+    def send_execute_response(self, scenario, origin, request):
+        response = pt.ExecuteResponse(result=scenario.status(), output=scenario.result())
+        self._sender.send(response, to=origin, reply_on=request)
+
+    def send_discovery_response(self, to=None, reply_on=None):
+        self._sender.send(pt.response.DiscoveryResponse(), to=to, reply_on=reply_on)
+
+    def send_timeout_response(self, scenario, origin, request):
+        log.warning('Timeout for scenario. Responding with timeout response')
+        response = pt.response.ExecuteResponse(result=-1, output='Timeout: %s.' % scenario.result)
+        self._sender.send(response, to=origin, reply_on=request)

@@ -9,15 +9,17 @@ from .json_message import JsonMessage
 from pt.utils import log
 
 
-def _generate_default_properties(message, correlation_id=None, expiration=None, reply_to=None):
-    if isinstance(reply_to, JsonMessage):
-        reply_to = reply_to.id
+def _generate_default_properties(message, reply_on=None, expiration=None, reply_to=None):
+    if isinstance(reply_on, JsonMessage):
+        reply_on = reply_on.id
+
+    reply_on = str(reply_on)
 
     return pika.spec.BasicProperties(
         app_id='pt-protocol',
         content_encoding='utf-8',
         content_type='application/json',
-        correlation_id=correlation_id,
+        correlation_id=reply_on,
         expiration=expiration,
         message_id=message.id,
         reply_to=reply_to,
@@ -43,6 +45,12 @@ class Sender(object):
             properties = _generate_default_properties(message, reply_on, expiration, reply_to)
             json = protocol.encode_message(message)
             self._channel.basic_publish(exchange=self._exchange, routing_key=send_to, body=json, properties=properties)
-            log.debug('Sent: to=%s, body=%s, properties=%s', send_to, json, properties)
+            log.debug('Sent message:')
+            log.debug('target: %s', to)
+            log.debug('message_id: %s', properties.message_id)
+            log.debug('type: %s', properties.type)
+            log.debug('reply_on: %s', properties.correlation_id)
+            log.debug('reply_to: %s', properties.reply_to)
+            log.debug('body: %s\n', json)
         else:
             raise TypeError('Unsupported protocol message type')
