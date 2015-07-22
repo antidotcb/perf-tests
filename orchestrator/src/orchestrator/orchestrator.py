@@ -1,13 +1,13 @@
 __author__ = 'Danylo Bilyk'
 
 import cmd
-import threading
+from optparse import OptionParser
 from pt import log
 
 import pt
 
-DISCOVERY_REQUEST_TIMEOUT = 2
-EXECUTE_REQUEST_TIMEOUT = 10
+DISCOVERY_TIMEOUT = 2
+EXECUTION_TIMEOUT = 10
 
 
 class Terminal(cmd.Cmd):
@@ -15,29 +15,67 @@ class Terminal(cmd.Cmd):
         cmd.Cmd.__init__(self)
         self.prompt = ''
         self.orc = orc
+        self.context = None
+
+    def precmd1(self, line):
+        parts = line.split(':')
+        # target is specified at start and separated from command by semicolon
+        args = line.split()
+        target = None
+        if len(parts) > 1:
+            target = parts[0]
+            args = parts[1:]
+        else:
+            parser = OptionParser()
+            parser.add_option('target', dest='target')
+            options, unparsed_args = parser.parse_args(line.split)
+            if options.target:
+                target = options.target
+                args = unparsed_args
+
+        if target:
+            # found some target, check if it exists
+            targets = self.orc.find_targets(target)
+            if targets:
+                self.set_context(targets)
+            else:
+                log.error('Cannot find target workers: %s', target)
+        else:
+            # no execution target specified, processing line as it is
+            self.set_context(None)
+
+        line = ''.join(args)
+        return line
+
+    def set_context(self, context):
+        self.context = context
 
     def do_stop(self, _args):
         pt.disable_auto_restart()
         self.orc.stop()
 
     def do_discovery(self, *args):
-        self.orc.forget_all()
-        self.orc.send_discovery_request()
-        threading.Timer(DISCOVERY_REQUEST_TIMEOUT + 1, lambda: self.do_status()).start()
+        self.orc.perform_discovery()
+        self.do_status()
 
     def do_script(self, args):
         args = args.split()
         if len(args) < 2:
             log.error('Usage: script name target')
-        else:
-            args = args[0:2]
-            script, target = args
-            self.orc.execute_script(script, target)
+            return
+        args = args[0:2]
+        script, target = args
+        targets = self.orc.find_targets(target)
+        state = self.orc.send_execute_request(script, targets)
+        state.wait_for_responses()
 
     def do_status(self, *args):
         print 'Discovered: '
         # noinspection PyProtectedMember
         workers = self.orc._workers
+        self.print_workers(workers)
+
+    def print_workers(self, workers):
         ips = sorted(workers, key=lambda w: (w[1].group, w[1].ip))
         mask = '%s\t%s\t%s\t\t%s'
         print '\n'.join([mask % (worker.name, worker.ip, worker.group, uuid) for uuid, worker in ips])
@@ -70,9 +108,7 @@ class Orchestrator(object):
 
         self._workers = pt.WorkersCollection()
 
-        self.__protect = threading.RLock()
-        self._responses = {}
-        self._targets = {}
+        self._states = {}
 
         self.__threads = pt.ThreadCollection()
         self.__threads.add(self._listener.start)
@@ -84,11 +120,9 @@ class Orchestrator(object):
         if isinstance(response, pt.protocol.Response):
             request_id = properties.correlation_id
             if request_id:
-                with self.__protect:
-                    responses = self._responses[request_id]
-                    packed = (response, properties)
-                    responses.append(packed)
-                    self._responses[request_id] = responses
+                request_state = self._states[request_id]
+                request_state.collect_response(response, properties)
+
             else:
                 # probably only case is greeting discovery response set as 'Hello'
                 if isinstance(response, pt.DiscoveryResponse):
@@ -105,60 +139,59 @@ class Orchestrator(object):
         self.__threads.stop()
         self._conn.close()
 
-    def send_broadcast_request(self, request):
-        self._broadcast.send(request)
-        self.add_request(request)
+    def send_request(self, sender, targets, timeout, request, collect_cb=None, responded_cb=None, timeout_cb=None):
+        state = pt.protocol.RequestState(timeout, request, targets, timeout_cb, collect_cb, responded_cb)
+        self._states[state.request.id] = state
+        sender.send(state.request, target=targets)
+        return state
 
-    def send_direct_request(self, request, to):
-        if not isinstance(to, list):
-            to = [to]
-
-        for target in to:
-            self._direct.send(request, to=target)
-
-        self.add_request(request, to)
-
-    def add_request(self, request, to=None):
-        self._targets[request.id] = to
-        self._responses[request.id] = []
-
-    def forget_all(self):
+    def perform_discovery(self):
         self._workers.reset()
-        self._responses = {}
-        self._targets = {}
+        request_state = self.send_discovery_request()
+        request_state.wait_for_responses()
 
-    def send_discovery_request(self):
-        request = pt.DiscoveryRequest()
-        self.send_broadcast_request(request)
-        timer = threading.Timer(DISCOVERY_REQUEST_TIMEOUT, lambda: self.on_discovery_timeout(request))
-        timer.start()
-        timer.join()
+    def send_discovery_request(self, cb=None):
+        collect = lambda response, properties: self.on_discovery_collect(response, properties)
+        return self.send_request(self._broadcast, '', DISCOVERY_TIMEOUT, pt.DiscoveryRequest(), collect, cb)
 
-    def on_discovery_timeout(self, request):
-        # targets = self._targets[request.id]
-        responses = self._responses[request.id]
+    def on_discovery_collect(self, response, *args):
+        if not isinstance(response, pt.DiscoveryResponse):
+            return False
+        accepted = False
+        try:
+            accepted = self._workers.append(response)
+        except ValueError, e:
+            log.error('Cannot add discovered worker [%s]. Exception: %s', response.uuid, e)
+        if not accepted:
+            log.warning('Shutdown identical worker: %s', response.uuid)
+            self._direct.send(pt.TerminateRequest(), target=response.uuid)
+        else:
+            log.info('Discovered: %s\t%s\t%s\t%s', response.name, response.group, response.ip, response.uuid)
 
-        for packed in responses:
-            response, properties = packed
-            if isinstance(response, pt.DiscoveryResponse):
-                try:
-                    accepted = self._workers.append(response)
-                    if not accepted:
-                        log.info('Shutdown identical worker: %s', response.uuid)
-                        self._direct.send(pt.TerminateRequest(), to=response.uuid)
-                except ValueError, e:
-                    log.error('%s', e)
-            else:
-                log.error('Invalid response on discovery request')
+    def send_execute_request(self, script, targets, cb=None):
+        if not targets:
+            raise ValueError('Can\'t find worker to execute script: %s', targets)
+        collect_cb = lambda response, properties: self.on_script_collect(script, response, properties)
+        return self.send_request(self._direct, targets, EXECUTION_TIMEOUT, pt.ExecuteRequest(script=script), collect_cb,
+                                 cb)
 
-        del self._targets[request.id]
-        del self._responses[request.id]
+    def on_script_collect(self, script, resp, properties):
+        log.info('Worker %s finished script %s execution: [%s] %s', resp.name, script, resp.result, resp.output)
 
-    def execute_script(self, script, target=None):
-        if not target:
-            log.error('No targets specified. Won\'t send request to nobody')
-            return
+    def restart_workers(self, target, reason=None):
+        selected = []
 
+        for worker in target:
+            found = self._workers.find(name=worker)
+            for w in found:
+                selected.append(w.uuid)
+            if not found:
+                log.warning('Unknown target: %s', worker)
+
+        request = pt.RestartRequest(reason=reason)
+        self._direct.send(request, target=selected)
+
+    def find_targets(self, target):
         targets = None
         if target:
             search_by_group = self._workers.find(group=target)
@@ -173,40 +206,4 @@ class Orchestrator(object):
                 targets = [worker.uuid for worker in search_by_name]
             elif search_by_uuid:
                 targets = [worker.uuid for worker in search_by_name]
-            else:
-                log.error('Can\'t find worker to execute script: %s', target)
-                return
-
-        request = pt.ExecuteRequest(script=script)
-        self.send_direct_request(request, to=targets)
-        callback = lambda: self.on_script_timeout(request)
-        timer = threading.Timer(EXECUTE_REQUEST_TIMEOUT, callback)
-        timer.start()
-        timer.join()
-
-    def on_script_timeout(self, request):
-        # targets = self._targets[request.id]
-        responses = self._responses[request.id]
-
-        for packed in responses:
-            response, properties = packed
-            if isinstance(response, pt.ExecuteResponse):
-                print response
-            else:
-                log.error('Invalid response on discovery request')
-
-        del self._targets[request.id]
-        del self._responses[request.id]
-
-    def restart_workers(self, workers, reason=None):
-        selected = []
-
-        for worker in workers:
-            found = self._workers.find(name=worker)
-            for w in found:
-                selected.append(w.uuid)
-            if not found:
-                log.warning('Unknown target: %s', worker)
-
-        request = pt.RestartRequest(reason=reason)
-        self.send_direct_request(request, to=selected)
+        return targets

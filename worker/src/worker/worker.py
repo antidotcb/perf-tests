@@ -3,7 +3,6 @@ __author__ = 'Danylo Bilyk'
 from pt import log
 
 from pt.scenarios import TimeoutError
-
 import pt
 
 
@@ -50,7 +49,7 @@ class Worker(object):
 
             origin = properties.reply_to
             if isinstance(request, pt.request.DiscoveryRequest):
-                self.send_discovery_response(to=origin, reply_on=request)
+                self.send_discovery_response(target=origin, reply_on=request)
 
             if isinstance(request, pt.RestartRequest):
                 self.restart()
@@ -72,12 +71,12 @@ class Worker(object):
 
     def send_execute_response(self, scenario, origin, request):
         response = pt.ExecuteResponse(result=scenario.status(), output=scenario.result())
-        self._sender.send(response, to=origin, reply_on=request)
+        self._sender.send(response, target=origin, reply_on=request)
 
-    def send_discovery_response(self, to=None, reply_on=None):
-        self._sender.send(pt.response.DiscoveryResponse(), to=to, reply_on=reply_on)
+    def send_discovery_response(self, target=None, reply_on=None):
+        self._sender.send(pt.response.DiscoveryResponse(), target=target, reply_on=reply_on)
 
     def send_timeout_response(self, scenario, origin, request):
         log.warning('Timeout for scenario. Responding with timeout response')
         response = pt.response.ExecuteResponse(result=-1, output='Timeout: %s.' % scenario.result)
-        self._sender.send(response, to=origin, reply_on=request)
+        self._sender.send(response, target=origin, reply_on=request)

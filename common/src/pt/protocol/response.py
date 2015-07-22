@@ -11,4 +11,3 @@ class Response(JsonMessage):
         self.ip = WorkerInfo().own().ip
         self.uuid = WorkerInfo().own().uuid
         super(Response, self).__init__(*args, **kwargs)
-

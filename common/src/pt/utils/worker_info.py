@@ -36,7 +36,7 @@ class WorkersCollection(object):
 
     def find(self, name=None, ip=None, group=None, uuid=None, collection=None):
         if not collection:
-            collection = [item for id, item in self._collection.items()]
+            collection = [item for uuid, item in self._collection.items()]
         found = [item for item in collection if
                  (
                      (item.name == name or not name) and

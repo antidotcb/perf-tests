@@ -71,8 +71,8 @@ def set_group(group):
     __set_option(GROUP_OPTION, group)
 
 
-def set_uuid(uuid):
-    __set_option(UUID_OPTION, uuid)
+def set_uuid(_uuid):
+    __set_option(UUID_OPTION, _uuid)
 
 
 def set_name(name):
