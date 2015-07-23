@@ -108,8 +108,8 @@ class Terminal(cmd.Cmd):
                     for details in request_state.get_response_details()]
         print tabulate(statuses, headers=['Name', 'Status'])
         if not request_state.is_responded:
-            not_responded = [[self.orc.get_worker(), '*** ERROR: NO ANSWER ***'] for target in
-                             request_state.not_responded()]
+            workers = self.orc.get_workers()
+            not_responded = [[workers[target], '*** ERROR: NO ANSWER ***'] for target in request_state.not_responded()]
             print '\nNot answered:'
             print tabulate(statuses, headers=['Name', 'Status'])
 
@@ -159,6 +159,21 @@ class Terminal(cmd.Cmd):
             print 'Waiting %d seconds for worker to restart...' % wait_for_restart
             time.sleep(wait_for_restart)
             self.do_discovery()
+        except Exception, e:
+            log.error(e)
+
+    def do_terminate(self, args=None):
+        try:
+            targets = self.orc.search_targets(self._command_targets)
+            workers = self.orc.get_workers()
+            workers_list = '\n\t* '.join([workers[uuid].name for uuid in targets])
+            print 'You are about to terminate following workers:\n%s' % workers_list
+            print 'After termination, workers are unable to start.'
+            answer = raw_input('Are you sure you want to terminate following workers?  [Y/N]')
+            if answer.lower() == 'y':
+                self.orc.terminate_workers(targets)
+            else:
+                print 'Does you wish, Sir.'
         except Exception, e:
             log.error(e)
 
@@ -258,7 +273,10 @@ class Orchestrator(object):
             log.error('Cannot add discovered worker [%s]. Exception: %s', response.uuid, e)
         if not accepted:
             log.warning('Shutdown identical worker: %s', response.uuid)
-            self._direct.send(pt.TerminateRequest(), target=response.uuid)
+            self.terminate_workers(response.uuid)
+
+    def terminate_workers(self, targets):
+        self._direct.send(pt.TerminateRequest(), target=targets)
 
     def send_execute_request(self, script, targets, cb=None):
         if not targets:
@@ -298,4 +316,4 @@ class Orchestrator(object):
         return targets
 
     def get_workers(self):
-        return iter(self._workers)
+        return self._workers
