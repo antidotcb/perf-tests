@@ -67,7 +67,7 @@ class Worker(object):
                 self.stop()
 
         except Exception, e:
-            log.error('Exception during processing:%s\nrequest=%s\npropeties=%s', e, request, properties)
+            log.error('Exception during processing:%s\nrequest=%s\nproperties=%s', e, request, properties)
 
     def send_execute_response(self, scenario, origin, request):
         response = pt.ExecuteResponse(result=scenario.status(), output=scenario.result())

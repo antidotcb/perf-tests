@@ -33,7 +33,7 @@ class RequestState(object):
         return self.__responses.itervalues()
 
     def not_responded(self):
-        return [target for target in targets if target not in self.__responses.keys()]
+        return [target for target in self.targets if target not in self.__responses.keys()]
 
     @synchronous('_object_lock')
     def collect_response(self, response, properties):

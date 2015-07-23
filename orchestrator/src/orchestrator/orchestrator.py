@@ -12,7 +12,7 @@ DISCOVERY_TIMEOUT = 2
 EXECUTION_TIMEOUT = 10
 
 
-# noinspection PyUnusedLocal
+# noinspection PyUnusedLocal,PyClassicStyleClass
 class Terminal(cmd.Cmd):
     no_cmd = ''
 
@@ -174,7 +174,7 @@ class Terminal(cmd.Cmd):
 
     @staticmethod
     def print_workers(workers):
-        sorted_list = sorted(workers, key=lambda worker: (worker.group, worker.ip))
+        sorted_list = sorted(workers, key=lambda w: (w.group, w.ip))
         table = [[worker.name, worker.ip, worker.group, worker.uuid] for worker in sorted_list]
         print tabulate(table, headers=['Name', 'IP', 'Group', 'UUID'])
 
