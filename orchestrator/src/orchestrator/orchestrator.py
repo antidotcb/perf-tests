@@ -114,7 +114,7 @@ class Terminal(cmd.Cmd):
             print tabulate(statuses, headers=['Name', 'Status'])
 
     def do_status(self, args=None):
-        self.execute_script('mt4_status', self.print_status)
+        self.execute_script('status', self.print_status)
 
     def execute_script(self, script, callback=None):
         try:
@@ -125,23 +125,22 @@ class Terminal(cmd.Cmd):
             log.error(e)
 
     def do_start(self, args=None):
-        self.execute_script('mt4_start')
+        self.execute_script('start')
 
     def do_stop(self, args=None):
-        self.execute_script('mt4_stop')
+        self.execute_script('stop')
 
     def do_clean(self, args=None):
-        self.execute_script('mt4_clean_logs')
+        self.execute_script('clean')
 
     def do_init(self, args=None):
-        self.execute_script('mt4_clean_bases')
+        self.execute_script('init')
 
     def do_script(self, args=None):
         if not args[0]:
             log.error('Specify script name as parameter')
             return
-        args = args[0]
-        self.execute_script(args[0])
+        self.execute_script(args)
 
     def do_list(self, args=None):
         print 'Discovered: '
@@ -149,7 +148,7 @@ class Terminal(cmd.Cmd):
         self.print_workers(workers)
 
     def do_update(self, args=None):
-        self.execute_script('update_src')
+        self.execute_script('update')
 
     def do_restart(self, args=None):
         try:
