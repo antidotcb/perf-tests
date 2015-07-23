@@ -1,1 +1,0 @@
-"c:\Program Files (x86)\Git\cmd\git.exe" pull %1 %2 %3 %4 %5
