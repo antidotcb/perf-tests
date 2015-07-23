@@ -11,7 +11,7 @@ class RequestState(object):
     def __init__(self, timeout, request, targets='', on_timeout=None, on_collect=None, on_responded=None):
         self._object_lock = threading.RLock()
         self.request = request
-        self.__targets = targets
+        self.targets = targets
         self.__collect_cb = on_collect
         self.__responded_cb = on_responded
         # just stupid simple sleep in case no on_timeout callback specified
@@ -29,8 +29,11 @@ class RequestState(object):
         return self.__responded
 
     @synchronous('_object_lock')
-    def get_responses(self):
+    def get_response_details(self):
         return self.__responses.itervalues()
+
+    def not_responded(self):
+        return [target for target in targets if target not in self.__responses.keys()]
 
     @synchronous('_object_lock')
     def collect_response(self, response, properties):
@@ -44,7 +47,7 @@ class RequestState(object):
             raise KeyError('Duplicate responses from uuid %s' % response.uuid)
         self.__responses[response.uuid] = ResponseDetails(response, properties)
         # cancel timeout callback if all request recipients responded
-        if self.__targets and set(self.__targets) == set(self.__responses.keys()):
+        if self.targets and set(self.targets) == set(self.__responses.keys()):
             self.__timeout_timer.cancel()
             self._set_responded()
 
