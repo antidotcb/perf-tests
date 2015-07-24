@@ -84,7 +84,7 @@ class Terminal(cmd.Cmd):
         pt.disable_auto_restart()
         self.orc.stop()
 
-    def do_discovery(self, args=None):
+    def do_search(self, args=None):
         self.orc.perform_discovery()
         self.do_list()
 
@@ -157,7 +157,7 @@ class Terminal(cmd.Cmd):
             wait_for_restart = 2
             print 'Waiting %d seconds for worker to restart...' % wait_for_restart
             time.sleep(wait_for_restart)
-            self.do_discovery()
+            self.do_search()
         except Exception, e:
             log.error(e)
 
@@ -188,7 +188,7 @@ class Terminal(cmd.Cmd):
 
     @staticmethod
     def print_workers(workers):
-        sorted_list = sorted(workers, key=lambda w: (w.group, w.ip))
+        sorted_list = sorted(list(workers), key=lambda w: (w.group, w.ip))
         table = [[worker.name, worker.ip, worker.group, worker.uuid] for worker in sorted_list]
         print tabulate(table, headers=['Name', 'IP', 'Group', 'UUID'])
 
