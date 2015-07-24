@@ -3,7 +3,6 @@ __author__ = 'Danylo Bilyk'
 import threading
 
 from pt.protocol import ResponseDetails
-
 from pt.utils import synchronous
 
 

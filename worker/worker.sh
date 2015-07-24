@@ -1,2 +1,2 @@
 #!/bin/bash
-python src/main.py orchestrator
+python src/main.py --group orchestrator

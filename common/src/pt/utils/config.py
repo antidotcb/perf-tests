@@ -17,7 +17,7 @@ _MAIN_SECTION = 'main'
 class Config(object):
     _parser = ConfigParser()
 
-    DEFAULT_CONFIG = '..\\config.ini'
+    DEFAULT_CONFIG = os.path.join('..', 'config.ini')
     __CONNECTION_SECTION = 'connection'
     __EXCHANGE_SECTION = 'exchange'
 
