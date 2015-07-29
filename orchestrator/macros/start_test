@@ -1,0 +1,16 @@
+args: test_name server_amount terminal_amount
+orchestrator:progress None
+orchestrator:init $test_name
+# prepare servers
+servers:stop
+sleep 10
+servers:status STOPPED
+servers:init
+servers:clean
+servers:start
+sleep 10
+servers:status RUNNING
+# prepare orchestration
+orchestrator:start 10
+orchestrator:collect
+

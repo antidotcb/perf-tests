@@ -1,2 +1,3 @@
 #!/bin/bash
-python src/main.py
+
+python src/main.py --group=orchestrator

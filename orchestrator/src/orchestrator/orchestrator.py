@@ -1,196 +1,20 @@
 __author__ = 'Danylo Bilyk'
 
-import time
-import cmd
-from pt import log
-
-from tabulate import tabulate
-
+from .terminal import Terminal
+from pt import config, log
 import pt
 
-DISCOVERY_TIMEOUT = 2
-EXECUTION_TIMEOUT = 10
+DISCOVERY_TIMEOUT = 5
+EXECUTION_TIMEOUT = 60
 
 
-# noinspection PyUnusedLocal,PyClassicStyleClass
-class Terminal(cmd.Cmd):
-    no_cmd = ''
+class CollectOnly(object):
+    def __init__(self, cls):
+        self.cls = cls
 
-    def __init__(self, orc):
-        cmd.Cmd.__init__(self)
-        self.orc = orc
-        self._default_targets = '*'
-        self._command_targets = None
-        self.update_prompt()
-
-    def update_prompt(self):
-        if self._default_targets:
-            self.prompt = '[%s]:' % self._default_targets
-        else:
-            self.prompt = ':'
-
-    def emptyline(self):
-        pass
-
-    def precmd(self, line):
-        parts = line.split(':')
-        # target is specified at start and separated from command by semicolon
-        args = line.split()
-        target = None
-        if len(parts) > 1:
-            target = parts[0]
-            args = parts[1:]
-
-        try:
-            self._try_set_command_targets(target)
-            if not args or (len(args) == 1 and not args[0].strip()):
-                self.set_default_targets(target)
-        except ValueError, e:
-            log.error(e)
-            return self.no_cmd
-
-        if not self._command_targets:
-            self._command_targets = self._default_targets
-
-        new_line = ' '.join(args)
-        return new_line
-
-    def default(self, line):
-        try:
-            self._try_set_command_targets(line)
-            self.set_default_targets(line)
-        except ValueError, e:
-            log.error(e)
-            return self.no_cmd
-
-    def set_default_targets(self, target):
-        self._default_targets = target
-        self.update_prompt()
-
-    def _try_set_command_targets(self, target):
-        if target:
-            # found some target, check if it exists
-            workers = self.orc.search_targets(target)
-            if workers:
-                self._command_targets = target
-            else:
-                raise ValueError('Cannot find target workers: %s' % target)
-
-    def postcmd(self, stop, line):
-        self._command_targets = None
-        return cmd.Cmd.postcmd(self, stop, line)
-
-    def do_quit(self, args):
-        pt.disable_auto_restart()
-        self.orc.stop()
-
-    def do_search(self, args=None):
-        self.orc.perform_discovery()
-        self.do_list()
-
-    def print_status(self, request_state):
-        def extract_status(output, code):
-            if code == 0:
-                lines = output.splitlines()
-                status = 'UNKNOWN'
-                status_line = None
-                for line in lines:
-                    if 'STATE' in line:
-                        status_line = line
-                        break
-                if status_line:
-                    status = status_line.split(':')[-1].strip()
-                return status
-            else:
-                return 'ERROR %d: %s' % (code, output)
-
-        statuses = [[details.response.name, extract_status(details.response.output, details.response.result)]
-                    for details in request_state.get_response_details()]
-        print tabulate(statuses, headers=['Name', 'Status'])
-        if not request_state.is_responded:
-            workers = self.orc.get_workers()
-            not_responded = [[workers[target], '*** ERROR: NO ANSWER ***'] for target in request_state.not_responded()]
-            print '\nNot answered:'
-            print tabulate(statuses, headers=['Name', 'Status'])
-
-    def do_status(self, args=None):
-        self.execute_script('status', self.print_status)
-
-    def execute_script(self, script, callback=None):
-        try:
-            targets = self.orc.search_targets(self._command_targets)
-            state = self.orc.send_execute_request(script, targets, callback)
-            state.wait_for_responses()
-        except Exception, e:
-            log.error(e)
-
-    def do_start(self, args=None):
-        self.execute_script('start')
-
-    def do_stop(self, args=None):
-        self.execute_script('stop')
-
-    def do_clean(self, args=None):
-        self.execute_script('clean')
-
-    def do_init(self, args=None):
-        self.execute_script('init')
-
-    def do_script(self, args=None):
-        if not args[0]:
-            log.error('Specify script name as parameter')
-            return
-        self.execute_script(args)
-
-    def do_list(self, args=None):
-        print 'Discovered: '
-        workers = self.orc.get_workers()
-        self.print_workers(workers)
-
-    def do_update(self, args=None):
-        self.execute_script('update')
-
-    def do_restart(self, args=None):
-        try:
-            targets = self.orc.search_targets(self._command_targets)
-            state = self.orc.restart_targets(targets, 'Manual')
-            wait_for_restart = 2
-            print 'Waiting %d seconds for worker to restart...' % wait_for_restart
-            time.sleep(wait_for_restart)
-            self.do_search()
-        except Exception, e:
-            log.error(e)
-
-    def do_terminate(self, args=None):
-        try:
-            targets = self.orc.search_targets(self._command_targets)
-            workers = self.orc.get_workers()
-            workers_list = '\n\t* '.join([workers[uuid].name for uuid in targets])
-            print 'You are about to terminate following workers:\n%s' % workers_list
-            print 'After termination, workers are unable to start.'
-            answer = raw_input('Are you sure you want to terminate following workers?  [Y/N]')
-            if answer.lower() == 'y':
-                self.orc.terminate_workers(targets)
-            else:
-                print 'Does you wish, Sir.'
-        except Exception, e:
-            log.error(e)
-
-    def do_verbose(self, args=None):
-        if str(args).lower() == 'off':
-            self.orc.verbose = False
-        else:
-            self.orc.verbose = True
-        print 'Verbose mode: %s' % self.orc.verbose
-
-    def start(self):
-        cmd.Cmd.cmdloop(self, 'Orchestrator terminal')
-
-    @staticmethod
-    def print_workers(workers):
-        sorted_list = sorted(list(workers), key=lambda w: (w.group, w.ip))
-        table = [[worker.name, worker.ip, worker.group, worker.uuid] for worker in sorted_list]
-        print tabulate(table, headers=['Name', 'IP', 'Group', 'UUID'])
+    # noinspection PyUnusedLocal
+    def __call__(self, response, *args, **kwargs):
+        return isinstance(response, self.cls)
 
 
 class Orchestrator(object):
@@ -198,47 +22,45 @@ class Orchestrator(object):
         self.verbose = False
         self._terminal = Terminal(self)
 
-        self.info = pt.WorkerInfo.own()
+        self.config = config
 
-        self._conn = pt.Connection(**pt.config.connection())
+        self._conn = pt.Connection(**self.config.connection())
 
-        exchanges = pt.config.exchanges()
+        exchanges = self.config.exchanges()
 
         self._conn.create_exchange(exchanges['broadcast'], 'fanout')
         self._conn.create_exchange(exchanges['direct'], 'direct', durable=True)
 
-        self._listener = pt.protocol.Listener(self._conn, exchanges['direct'], self.processor,
-                                              routing_key=self.info.uuid)
+        uuid = self.config.uuid()
 
-        self._broadcast = pt.protocol.Sender(self._conn, exchanges['broadcast'], default_reply_to=self.info.uuid)
-        self._direct = pt.protocol.Sender(self._conn, exchanges['direct'], default_reply_to=self.info.uuid)
+        self._listener = pt.protocol.Listener(self._conn, exchanges['direct'], self.process, routing_key=uuid)
+        self._broadcast = pt.protocol.Sender(self._conn, exchanges['broadcast'], default_reply_to=uuid)
+        self._direct = pt.protocol.Sender(self._conn, exchanges['direct'], default_reply_to=uuid)
 
-        self._workers = pt.WorkersCollection()
+        self._active_workers = pt.Workers()
+        self._discovered_responses = []
 
         self._states = {}
 
         self.__threads = pt.ThreadCollection()
+        self.__threads.add(self._perform_discovery)
         self.__threads.add(self._listener.start)
         self.__threads.add(self._terminal.start)
 
-        log.debug('Own UUID: %s', self.info.uuid)
-
-    def processor(self, response, properties):
+    def process(self, response, properties):
         if isinstance(response, pt.protocol.Response):
             request_id = properties.correlation_id
             if request_id:
-                request_state = self._states[request_id]
-                request_state.collect_response(response, properties)
-
+                if request_id in self._states.keys():
+                    request_state = self._states[request_id]
+                    request_state.collect_response(response, properties)
+                else:
+                    log.error('Response to unknown request (request_id=%s): %s', request_id, response)
             else:
-                # probably only case is greeting discovery response set as 'Hello'
-                if isinstance(response, pt.DiscoveryResponse):
-                    self._workers.append(response)
-                    pass
+                log.warning('Response without request id: %s', response)
 
     def start(self):
         self.__threads.start()
-        self.send_discovery_request()
         self.__threads.join()
 
     def stop(self):
@@ -252,27 +74,55 @@ class Orchestrator(object):
         sender.send(state.request, target=targets)
         return state
 
-    def perform_discovery(self):
-        self._workers.reset()
-        request_state = self.send_discovery_request()
-        request_state.wait_for_responses()
+    def _perform_discovery(self):
+        request = pt.DiscoveryRequest()
+        timeout = DISCOVERY_TIMEOUT
+        collector = CollectOnly(pt.DiscoveryResponse)
+        while True:
+            request_state = self.send_request(self._broadcast, '', timeout, request, collect_cb=collector)
+            request_state.wait_for_responses()
+            lost = self._active_workers.all()
+            new = {}
+            for detail in request_state.get_response_details():
+                r = detail.response
+                discovered = pt.Worker(r.name, r.ip, r.group, r.uuid)
+                if discovered.uuid in self._active_workers:
+                    worker = self._active_workers[discovered.uuid]
+                    if worker == discovered:
+                        del lost[discovered.uuid]
+                        continue
+                    if worker.ip != discovered.ip:
+                        log.error('CRITICAL ERROR: Duplicate UUID for different IP. Terminating.\nOld:%s\nNew:%s',
+                                  worker, discovered)
+                        raise pt.DuplicateError()
+                    else:
+                        log.debug('Renamed worker: %s ==> %s', worker, discovered)
+                        self._active_workers.remove(worker.uuid)
+                        self._active_workers.append(discovered)
+                else:
+                    new[discovered.uuid] = discovered
 
-    def send_discovery_request(self, cb=None):
-        collect = lambda response, properties: self.on_discovery_collect(response, properties)
-        return self.send_request(self._broadcast, '', DISCOVERY_TIMEOUT, pt.DiscoveryRequest(), collect, cb)
+            for lost_worker_uuid in lost.keys():
+                self._active_workers.remove(lost_worker_uuid)
 
-    def on_discovery_collect(self, response, properties):
-        del properties
-        if not isinstance(response, pt.DiscoveryResponse):
-            return False
-        accepted = False
-        try:
-            accepted = self._workers.append(response)
-        except ValueError, e:
-            log.error('Cannot add discovered worker [%s]. Exception: %s', response.uuid, e)
-        if not accepted:
-            log.warning('Shutdown identical worker: %s', response.uuid)
-            self.terminate_workers(response.uuid)
+            duplicates = []
+            for new_worker in new.values():
+                try:
+                    self._active_workers.append(new_worker)
+                    mask = pt.Worker(name=new_worker.name, ip=new_worker.ip, group=new_worker.group)
+                    lost_after_restart = [worker for worker in lost.values() if worker.match(mask)]
+                    if lost_after_restart:
+                        old = lost_after_restart[0]
+                        del lost[old.uuid]
+                        log.debug('Restart detected: %s', new_worker)
+                    else:
+                        log.info('Found new worker: %s', new_worker)
+                except pt.DuplicateError, e:
+                    duplicates.append(new_worker.uuid)
+                    log.error(e)
+
+            for lost_worker in lost.values():
+                log.warning('Lost connection to: %s', lost_worker)
 
     def terminate_workers(self, targets):
         self._direct.send(pt.TerminateRequest(), target=targets)
@@ -295,24 +145,12 @@ class Orchestrator(object):
         request = pt.RestartRequest(reason=reason)
         self._direct.send(request, target=targets)
 
-    def search_targets(self, query='*'):
-        targets = None
-        if query:
-            search_by_group = self._workers.find(group=query)
-            search_by_name = self._workers.find(name=query)
-            search_by_uuid = self._workers.find(uuid=query)
-            search_by_ip = self._workers.find(ip=query)
-            if query == '*':
-                targets = [worker.uuid for worker in self._workers]
-            if search_by_group:
-                targets = [worker.uuid for worker in search_by_group]
-            elif search_by_name:
-                targets = [worker.uuid for worker in search_by_name]
-            elif search_by_ip:
-                targets = [worker.uuid for worker in search_by_name]
-            elif search_by_uuid:
-                targets = [worker.uuid for worker in search_by_name]
-        return targets
-
     def get_workers(self):
-        return self._workers
+        return self._active_workers
+
+    def search_targets(self, query):
+        found = self._active_workers.search(query)
+        if found:
+            return [worker.uuid for worker in found]
+        else:
+            return []

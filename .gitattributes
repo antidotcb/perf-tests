@@ -1,0 +1,2 @@
+# set default lf eol for linux sh
+*.sh text eol=lf

@@ -20,7 +20,7 @@ class RequestState(object):
         self.__responded = False
 
     @synchronous('_object_lock')
-    def _set_responded(self, responded=True):
+    def _set_responded(self, responded):
         self.__responded = responded
 
     @synchronous('_object_lock')
@@ -48,7 +48,7 @@ class RequestState(object):
         # cancel timeout callback if all request recipients responded
         if self.targets and set(self.targets) == set(self.__responses.keys()):
             self.__timeout_timer.cancel()
-            self._set_responded()
+            self._set_responded(True)
 
     def wait_for_responses(self):
         self.__timeout_timer.start()
