@@ -2,7 +2,7 @@
 
 dts() { date +%Y-%m-%d-%H-%M-%S; }
 
-dmkdir() { newdir="$@$(dts)"; mkdir $newdir & echo $newdir; }
+dmkdir() { newdir="$@$(dts)"; mkdir ${newdir} & echo ${newdir}; }
 
 log_dir="/media/mt4_logs/"
 log_mask="T*"

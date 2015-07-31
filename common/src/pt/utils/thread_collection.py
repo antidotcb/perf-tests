@@ -14,8 +14,9 @@ class ThreadCollection(object):
         self.__threads = []
 
     def add(self, callback):
-        t = threading.Thread(target=callback)
-        self.__threads.append(t)
+        thread = threading.Thread(target=callback)
+        self.__threads.append(thread)
+        return thread
 
     def start(self):
         for t in self.__threads:

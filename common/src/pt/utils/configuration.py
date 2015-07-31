@@ -109,7 +109,7 @@ class Configuration(object):
                 if self._parser.get(section, option):
                     self._parser.remove_option(section, option)
             except (NoOptionError, NoSectionError):
-                pass
+                pass  # silently ignore if variable or section doesn't exist - no need to remove it
 
     def __clean_temporary_values(self):
         self.__set_option(self.UUID_OPTION, None, self.__GENERAL_SECTION__)
@@ -146,5 +146,6 @@ class Configuration(object):
                         parser.add_section(section)
                     parser.set(section, option, value)
         return parser
+
 
 config = Configuration()

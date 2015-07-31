@@ -13,17 +13,15 @@ class JsonMessage(object):
                 self.__set_values(arg.__dict__)
             else:
                 raise TypeError('Unnamed arguments are accepted only in form dictionaries or objects.')
-        # priority is given to directly passed named arguments, their value override copied values
-        self.__set_values(kwargs)
+        self.__set_values(kwargs)  # directly passed constructor args override any others
 
     def __set_values(self, values):
         if not isinstance(values, dict):
             raise TypeError('Values to setup should be a dictionary.')
         for attr, value in values.iteritems():
             if str(attr).startswith('_'):
-                continue  # skip `private` members, only public variables are copied
+                continue  # skip `private` members
             if str(attr) in self.__dict__.keys():
-                # setup only object existing values
                 setattr(self, attr, value)
 
     def __str__(self):

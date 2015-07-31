@@ -1,6 +1,6 @@
 __author__ = 'Danylo Bilyk'
 
-import protocol
+from protocol import Protocol
 from .json_message import JsonMessage
 from .mq_listener import Listener
 from .mq_sender import Sender

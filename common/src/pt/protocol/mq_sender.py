@@ -4,33 +4,53 @@ import time
 
 import pika
 
-import protocol
+from protocol import Protocol
 from .json_message import JsonMessage
-from pt.utils import log
+from pt.utils import log, Worker
 
 
 class Sender(object):
-    def __init__(self, connection, exchange, default_send_to='', default_reply_to=None, default_expiration=None):
+    def __init__(self, connection, exchange, default_targets=None, default_reply_to=None, default_expiration=None):
         self._channel = connection.new_channel()
         self._exchange = exchange
-        self._own_address = str(default_reply_to)
-        self._default_target = str(default_send_to)
+        self._reply_to = Sender.__to_string(default_reply_to)
+        if default_targets:
+            if not isinstance(default_targets, list):
+                default_targets = [default_targets]
+            for target in default_targets:
+                if not isinstance(target, Worker):
+                    raise TypeError('Only workers are accepted as target')
+        self._targets = default_targets
         self._expiration = default_expiration
 
-    def send(self, message, target='', reply_on=None, reply_to=None, expiration=None):
-        targets = target if target else self._default_target
-        reply_to = str(reply_to) if reply_to else self._own_address
+    def send(self, message, targets=None, reply_on=None, reply_to=None, expiration=None):
+        targets = targets or self._targets
+        reply_to = self.__to_string(reply_to, self._reply_to)
         expiration = expiration if expiration else self._expiration
 
         if not isinstance(targets, list):
             targets = [targets]
 
+        for target in targets:
+            if target and not isinstance(target, Worker):
+                raise TypeError('Only workers are accepted as target')
+
         if isinstance(message, JsonMessage):
-            properties = self.__generate_properties(message, reply_on, expiration, reply_to)
-            json = protocol.encode_message(message)
+            msg_properties = self.__generate_properties(message, reply_on, expiration, reply_to)
+            json = Protocol.encode_message(message)
             for target in targets:
-                self._channel.basic_publish(self._exchange, target, json, properties)
-                self.__print_debug_info(json, properties, target)
+                key = target.uuid if target else ''
+                try:
+                    self._channel.basic_publish(self._exchange, routing_key=key, body=json, properties=msg_properties)
+                    self.__print_debug_info(json, msg_properties, target)
+                except Exception, e:
+                    log.error('Error trying to send: %s', e)
+                    log.error('target: %s', target)
+                    log.error('message_id: %s', msg_properties.message_id)
+                    log.error('type: %s', msg_properties.type)
+                    log.error('reply_on: %s', msg_properties.correlation_id)
+                    log.error('reply_to: %s', msg_properties.reply_to)
+                    log.error('body: %s\n', json)
         else:
             raise TypeError('Unsupported protocol message type')
 
@@ -50,7 +70,7 @@ class Sender(object):
             message_id=message.id,
             reply_to=reply_to,
             timestamp=time.time(),
-            type=protocol.get_message_type(message)
+            type=Protocol.get_message_type(message.__class__)
         )
 
     @staticmethod
@@ -62,3 +82,7 @@ class Sender(object):
         log.debug('reply_on: %s', properties.correlation_id)
         log.debug('reply_to: %s', properties.reply_to)
         log.debug('body: %s\n', json)
+
+    @staticmethod
+    def __to_string(value, default_value=''):
+        return str(value) if value else default_value

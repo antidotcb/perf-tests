@@ -1,6 +1,5 @@
 __author__ = 'Danylo Bilyk'
 
-import time
 import threading
 import exceptions
 
@@ -34,7 +33,6 @@ class Scenario(object):
 
     def _exec_run(self, *args, **kwargs):
         log.debug('%s _exec_run: (args=%s kwargs=%s)' % (self._thread.name, args, kwargs))
-        time.sleep(1)
 
     def run(self, *args, **kwargs):
         self._result = self._exec_run(*args, **kwargs)

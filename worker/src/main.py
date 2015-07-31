@@ -5,6 +5,6 @@ import pt
 from worker import Worker
 
 if __name__ == '__main__':
-    pt.enable_auto_restart()
+    pt.AutoRestart.enable()
     worker = Worker()
-    worker.start()
+    worker.run()

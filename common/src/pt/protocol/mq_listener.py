@@ -1,7 +1,7 @@
 __author__ = 'Danylo Bilyk'
 
 from pt.utils import log
-from pt.protocol import protocol
+from pt.protocol import Protocol
 
 
 class Listener(object):
@@ -34,7 +34,6 @@ class Listener(object):
         log.info('Stop consume (number: %s, queue: %s, tag: %s)', number, self._queue_name, self._tag)
         self._channel.close()
 
-    # noinspection PyUnusedLocal
     def callback(self, channel, method, properties, body):
         log.debug('Received message:')
         log.debug(' type: %s', properties.type)
@@ -42,12 +41,14 @@ class Listener(object):
         log.debug(' correlation_id: %s', properties.correlation_id)
         log.debug(' reply_to: %s', properties.reply_to)
         log.debug(' body:\n%s\n', body)
+
         try:
-            message = protocol.decode_message(body, properties)
+            message = Protocol.decode_message(body, properties.type)
             self._processor(message, properties)
-            if not self._no_ack:
-                tag = method.delivery_tag
-                channel.basic_ack(delivery_tag=tag)
-                log.debug('Acknowledge sent (ch: %s, delivery_tag: %s)', self._channel.channel_number, tag)
         except Exception, e:
             log.exception('Processor failed: %s', e)
+
+        if not self._no_ack:
+            tag = method.delivery_tag
+            channel.basic_ack(delivery_tag=tag)
+            log.debug('Acknowledge sent (ch: %s, delivery_tag: %s)', self._channel.channel_number, tag)

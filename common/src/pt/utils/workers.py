@@ -50,7 +50,10 @@ class Workers(object):
             del self._collection[uid]
 
     def all(self):
-        return self._collection.copy()
+        return iter(self._collection.values())
+
+    def ids(self):
+        return iter(self._collection.keys())
 
     def search(self, query='*'):
         if not query:

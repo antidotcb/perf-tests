@@ -5,6 +5,6 @@ import pt
 from orchestrator import Orchestrator
 
 if __name__ == '__main__':
-    pt.enable_auto_restart(10)
+    pt.AutoRestart.enable()
     orchestrator = Orchestrator()
-    orchestrator.start()
+    orchestrator.run()
